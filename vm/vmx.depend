@@ -1,0 +1,14 @@
+# depslib dependency file v1.0
+1711412211 source:e:\ingenieria informatica\3.1\arquitectura de computadora\caca\main.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	"operaciones.h"
+
+1711412211 e:\ingenieria informatica\3.1\arquitectura de computadora\caca\operaciones.h
+
+1711412716 source:e:\ingenieria informatica\3.1\arquitectura de computadora\caca\operaciones.c
+	<stdio.h>
+	<stdlib.h>
+	"operaciones.h"
+
