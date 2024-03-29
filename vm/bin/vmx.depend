@@ -1,0 +1,75 @@
+# depslib dependency file v1.0
+1711412211 source:e:\ingenieria informatica\3.1\arquitectura de computadora\caca\main.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	"operaciones.h"
+
+1711412211 e:\ingenieria informatica\3.1\arquitectura de computadora\caca\operaciones.h
+
+1711412716 source:e:\ingenieria informatica\3.1\arquitectura de computadora\caca\operaciones.c
+	<stdio.h>
+	<stdlib.h>
+	"operaciones.h"
+
+1711684040 source:c:\users\vanci\onedrive\escritorio\progra\a\virtual-machine\vm\main.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	"operaciones.h"
+
+1711669575 c:\users\vanci\onedrive\escritorio\progra\a\virtual-machine\vm\operaciones.h
+	"mv.h"
+
+1711682594 c:\users\vanci\onedrive\escritorio\progra\a\virtual-machine\vm\mv.h
+	<stdio.h>
+
+1711684162 source:c:\users\vanci\onedrive\escritorio\progra\a\virtual-machine\vm\operaciones.c
+	"operaciones.h"
+
+1711682653 source:c:\users\vanci\onedrive\escritorio\progra\a\virtual-machine\vm\mv.c
+	<string.h>
+	"mv.h"
+
+1711666144 source:c:\users\vanci\onedrive\escritorio\progra\a\virtual-machine\vm\operando.c
+
+1711685558 source:e:\repo\virtual-machine\vm\main.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	"operaciones.h"
+
+1711685558 e:\repo\virtual-machine\vm\operaciones.h
+	"mv.h"
+
+1711685558 e:\repo\virtual-machine\vm\mv.h
+	<stdio.h>
+
+1711685558 source:e:\repo\virtual-machine\vm\operando.c
+
+1711688270 source:e:\repo\virtual-machine\vm\mv.c
+	<string.h>
+	"mv.h"
+
+1711736221 source:e:\ingenieria informatica\3.1\arquitectura de computadora\virtual machine\vm\main.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	"operaciones.h"
+
+1711733728 e:\ingenieria informatica\3.1\arquitectura de computadora\virtual machine\vm\operaciones.h
+	"mv.h"
+
+1711685558 e:\ingenieria informatica\3.1\arquitectura de computadora\virtual machine\vm\mv.h
+	<stdio.h>
+
+1711736388 source:e:\ingenieria informatica\3.1\arquitectura de computadora\virtual machine\vm\operaciones.c
+	"operaciones.h"
+
+1711685558 source:e:\ingenieria informatica\3.1\arquitectura de computadora\virtual machine\vm\operando.c
+
+1711736601 source:e:\ingenieria informatica\3.1\arquitectura de computadora\virtual machine\vm\mv.c
+	<string.h>
+	<stdlib.h>
+	"mv.h"
+
