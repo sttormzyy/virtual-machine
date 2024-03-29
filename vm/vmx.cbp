@@ -34,10 +34,18 @@
 		<Unit filename="main.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="mv.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="mv.h" />
 		<Unit filename="operaciones.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="operaciones.h" />
+		<Unit filename="operando.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="operando.h" />
 		<Extensions>
 			<lib_finder disable_auto="1" />
 		</Extensions>

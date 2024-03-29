@@ -12,3 +12,24 @@
 	<stdlib.h>
 	"operaciones.h"
 
+1711684040 source:c:\users\vanci\onedrive\escritorio\progra\a\virtual-machine\vm\main.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	"operaciones.h"
+
+1711669575 c:\users\vanci\onedrive\escritorio\progra\a\virtual-machine\vm\operaciones.h
+	"mv.h"
+
+1711682594 c:\users\vanci\onedrive\escritorio\progra\a\virtual-machine\vm\mv.h
+	<stdio.h>
+
+1711684162 source:c:\users\vanci\onedrive\escritorio\progra\a\virtual-machine\vm\operaciones.c
+	"operaciones.h"
+
+1711682653 source:c:\users\vanci\onedrive\escritorio\progra\a\virtual-machine\vm\mv.c
+	<string.h>
+	"mv.h"
+
+1711666144 source:c:\users\vanci\onedrive\escritorio\progra\a\virtual-machine\vm\operando.c
+
