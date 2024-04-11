@@ -1,0 +1,45 @@
+# depslib dependency file v1.0
+1712770953 source:e:\ingenieria informatica\3.1\arquitectura de computadora\vmx\vmx\main.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	"operaciones.h"
+
+1712715929 e:\ingenieria informatica\3.1\arquitectura de computadora\vmx\vmx\operaciones.h
+	"mv.h"
+
+1712712994 e:\ingenieria informatica\3.1\arquitectura de computadora\vmx\vmx\mv.h
+	<stdio.h>
+
+1712770040 source:e:\ingenieria informatica\3.1\arquitectura de computadora\vmx\vmx\mv.c
+	<string.h>
+	<stdlib.h>
+	"mv.h"
+
+1712770302 source:e:\ingenieria informatica\3.1\arquitectura de computadora\vmx\vmx\operaciones.c
+	"operaciones.h"
+	<stdlib.h>
+	<time.h>
+
+1712803465 source:e:\repomaquinavirtual\virtual-machine\vmx\operaciones.c
+	"operaciones.h"
+	<stdlib.h>
+	<time.h>
+
+1712715929 e:\repomaquinavirtual\virtual-machine\vmx\operaciones.h
+	"mv.h"
+
+1712802250 e:\repomaquinavirtual\virtual-machine\vmx\mv.h
+	<stdio.h>
+
+1712802540 source:e:\repomaquinavirtual\virtual-machine\vmx\main.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	"operaciones.h"
+
+1712803396 source:e:\repomaquinavirtual\virtual-machine\vmx\mv.c
+	<string.h>
+	<stdlib.h>
+	"mv.h"
+
