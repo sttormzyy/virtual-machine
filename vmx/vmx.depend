@@ -43,3 +43,25 @@
 	<stdlib.h>
 	"mv.h"
 
+1712879444 source:c:\users\vanci\onedrive\escritorio\virtual-machine\vmx\operaciones.c
+	"operaciones.h"
+	<stdlib.h>
+	<time.h>
+
+1712879444 c:\users\vanci\onedrive\escritorio\virtual-machine\vmx\operaciones.h
+	"mv.h"
+
+1712985225 c:\users\vanci\onedrive\escritorio\virtual-machine\vmx\mv.h
+	<stdio.h>
+
+1712981364 source:c:\users\vanci\onedrive\escritorio\virtual-machine\vmx\main.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	"operaciones.h"
+
+1712985364 source:c:\users\vanci\onedrive\escritorio\virtual-machine\vmx\mv.c
+	<string.h>
+	<stdlib.h>
+	"mv.h"
+

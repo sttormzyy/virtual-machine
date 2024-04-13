@@ -13,7 +13,7 @@ int main(int argc, char *argv[]){
   void (*operaciones[27])() = {MOV, ADD, SUB, SWAP, MUL, DIV, CMP, SHL, SHR, AND, OR, XOR,
                                RND, NULL, NULL, NULL, SYS, JMP, JZ, JP, JN, JNZ, JNP, JNN, LDL, LDH, NOT};
 
-  // verifica  q el archivo sea del tipo correcto y almacena el tamaño del programa en bytes
+  // verifica  q el archivo sea del tipo correcto y almacena el tamaï¿½o del programa en bytes
   valido = leeHeader(&programSize, argv[1],&mv);
 
   if (valido){
@@ -22,6 +22,10 @@ int main(int argc, char *argv[]){
 
     // inicializo registros CS,DS,IP y Tabla de Segmento
     iniciaMV(&mv, programSize);
+
+    if (checkParam(argc, argv, "-d")) {
+      disassembler(mv, programSize);
+    }
 
     // procesa programa hasta encontrar un STOP o que ocurra un error (segmento invalido,div por 0,etc)
     while (((instruccionActual(mv)&0xFF) != 0xFF) && !mv.errorFlag) {
@@ -70,7 +74,7 @@ void procesaInstruccion(TMV *mv, void (*operaciones[])()){
 
   //segun el codigo de operacion, llamo la q corresponda
   if(codOp & 0x10){
-   if(codOp>=0x11 && codOp<=0x17)
+    if(codOp>=0x11 && codOp<=0x17)
      jump(B,codOp,mv,operaciones); //aca llamo a los jumps
     else
      operaciones[codOp](B,opB,mv); //operaciones 1 operando

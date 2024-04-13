@@ -39,7 +39,7 @@ void iniciaMV(TMV *mv, int programSize)
 }
 
 // lee el header, retorna 1 si hay error, 0 si esta todo bien
-// nota: podemos agregar mas codigos de error en caso de que querramos diferenciar que es lo que falló
+// nota: podemos agregar mas codigos de error en caso de que querramos diferenciar que es lo que fallï¿½
 int leeHeader( int *programSize, char *filename, TMV *mv)
 {
 	FILE *arch = fopen(filename, "rb");
@@ -51,13 +51,13 @@ int leeHeader( int *programSize, char *filename, TMV *mv)
 		// lee la version
 		fread(&version, sizeof(char), 1, arch);
 
-		// lee el tamaño del programa
+		// lee el tamaï¿½o del programa
         fread(size, sizeof(char), 2, arch);
 
         *programSize = (size[0] << 8) | size[1];
         *programSize = abs(*programSize);
 
-        // valido tamaño del programa
+        // valido tamaï¿½o del programa
         if (*programSize!=0  && *programSize<=MEMORIA_SIZE) {
          printf("%s %d\n", tipoArch, version);
          printf("PROGRAM SIZE: %d\n", *programSize);
@@ -124,6 +124,7 @@ switch(tipo){
  case 3: //verifica que el IP no se salga de segmento
   return (mv.registros[5]&0xFFFF) <= (mv.tablaSegmentos[0]&0xFFFF);
  }
+ return 0;
 }
 
 void readOperand(TMV *mv, int tipo, int *operador)
@@ -133,7 +134,7 @@ void readOperand(TMV *mv, int tipo, int *operador)
 	short int aux;
 	*operador = 0;
 
-	// obtengo la información que esta en memoria sobre el operador
+	// obtengo la informaciï¿½n que esta en memoria sobre el operador
 	// nota: IP podria ser reemplazado por mv->registros[5] pero es mas legible como IP
 	for (i = 0; i < operadorSize; ++i) {
 		*operador = (*operador << 8) | (mv->memoria[IP++] & 0xFF);
@@ -196,4 +197,133 @@ int direccion(TMV mv, int memoryOp)
 	return inicioSegmento + offset;
 }
 
+void disassembler(TMV mv, int programSize) {
+  int ip = mv.registros[5];
+  mv.errorFlag = 0;
 
+  while (mv.registros[5] < programSize && !mv.errorFlag) {
+    pasoDis(&mv, instruccionActual(mv));
+  }
+
+  mv.registros[5] = ip;
+}
+
+void pasoDis(TMV *mv, char instruccion) {
+  char fnNombres[32][5] = {"MOV", "ADD", "SUB", "SWAP", "MUL", "DIV", "CMP", "SHL", "SHR", "AND", "OR", "XOR",
+                           "RND", "NULL", "NULL", "NULL", "SYS", "JMP", "JZ", "JP", "JN", "JNZ", "JNP", "JNN", "LDL", "LDH", "NOT",
+                           "NULL","NULL","NULL","STOP","STOP"};
+  int codOp = instruccion & 0x1F;
+  int opB, opA, B, A, i;
+  if (instruccionValida(codOp)) {
+    printf("[%04X] ", mv->registros[5]);
+    // determino tipos de operandos
+    opB = ((instruccion & 0xC0) >> 6) & 0x03;
+    opA = (instruccion & 0x30) >> 4;
+
+    for (i = 1; i >= 0; --i)
+      printf("%02X ", instruccion >> (i * 4) & 0xFF);
+
+    // IP queda apuntando a la prox instruccion
+    (mv->registros[5])++;
+
+    // obtengo operandos
+    readOperandDis(mv, opB, &B);
+    readOperandDis(mv, opA, &A);
+    fillExtraDis(opB, opA);
+
+    printf("| %s ", fnNombres[codOp]);
+
+    if (codOp & 0x10 && (codOp >= 0x11 && codOp <= 0x17))
+    {
+      mostrarOp(opB, B);
+    }
+    else if (codOp >= 0x00 && codOp <= 0x0C)
+    {
+      mostrarOp(opA, A);
+      putchar(',');
+      mostrarOp(opB, B);
+    }
+
+    putchar('\n');
+  }
+  else
+    mv->errorFlag = 2; // instruccion invalida
+}
+
+int checkParam(int argc, char *argv[], char strCmp[]) {
+	int i = 0;
+
+	while( argc > i && strcmp(argv[i], strCmp)) {
+		i++;
+	}
+
+	if (i < argc)
+		return 1;
+	return 0;
+}
+
+void mostrarOp(int tipo, int valor) {
+  char regNombres[34][4] = {"CS","DS","XXX","XXX","XXX","IP","XXX","XXX","CC","AC",
+                          "EAX","AL","AH","AX","EBX","BL","BH","BX","ECX","CL","CH","CX","EDX","DL","DH","DX",
+                          "EEX","EL","EH","EX","EFX","FL","FH","FX"};
+  int secReg, codReg;
+
+  switch(tipo) {
+  // Memoria
+  case 0:
+    secReg = (valor >> 4) & 0x3;
+    codReg = valor & 0xF;
+
+    if (codReg >= 10) {
+      codReg = (codReg - 10) * 4 + 10;
+    }
+    printf("[%s", regNombres[secReg + codReg]);
+    printf(" + %4d]", valor & 0xFFFF);
+    break;
+  // Inmediato
+  case 1:
+    printf("%3d", valor);
+    break;
+  // Registro
+  case 2:
+    secReg = (valor >> 4) & 0x3;
+    codReg = valor & 0xF;
+
+    if (codReg >= 10) {
+      codReg = (codReg - 10) * 4 + 10;
+    }
+    printf("%s", regNombres[secReg + codReg]);
+  }
+}
+
+void readOperandDis(TMV *mv, int tipo, int *operador)
+{
+  char operadorSize = (~tipo) & 0x3;
+  int i, IP = mv->registros[5];
+  short int aux;
+  *operador = 0;
+
+  // obtengo la informaciï¿½n que esta en memoria sobre el operador
+  // nota: IP podria ser reemplazado por mv->registros[5] pero es mas legible como IP
+  for (i = 0; i < operadorSize; ++i) {
+    printf("%02X ", (mv->memoria[IP] & 0xFF));
+    *operador = (*operador << 8) | (mv->memoria[IP++] & 0xFF);
+  }
+  mv->registros[5] = IP;
+
+  // puede parecer raro, pero vi que si haciamos mov a un registro un negativo, ponele MOV EBX,-34 no se acarreaba el signo en todo
+  //  el registro xq inicializamos arriba el oeprador en 0 entonces los 16 bits mas significativos siempre estan en 0, entonces lo q hago
+  //  es pasar el valor a un short int q tiene 16 bits y lo vuelvo a poner en operador entonces si era negativo expande el signo solo
+  //  solo va "servir" si es negativo y queremos guardarlo en un registro completo, si fuera guardar en BX en vez de EBX lo q teniamos funca
+  if (tipo == 1)
+  {
+    aux = *operador;
+    *operador = aux;
+  }
+}
+
+void fillExtraDis(int opB, int opA) {
+    int extraSpace = opA + opB, i;
+    for (i = 0; i < extraSpace; i++)
+      printf("   ");
+}
