@@ -21,7 +21,7 @@
 	<stdlib.h>
 	<time.h>
 
-1712803465 source:e:\repomaquinavirtual\virtual-machine\vmx\operaciones.c
+1713208211 source:e:\repomaquinavirtual\virtual-machine\vmx\operaciones.c
 	"operaciones.h"
 	<stdlib.h>
 	<time.h>
@@ -29,19 +29,20 @@
 1712715929 e:\repomaquinavirtual\virtual-machine\vmx\operaciones.h
 	"mv.h"
 
-1712802250 e:\repomaquinavirtual\virtual-machine\vmx\mv.h
+1713204933 e:\repomaquinavirtual\virtual-machine\vmx\mv.h
 	<stdio.h>
 
-1712802540 source:e:\repomaquinavirtual\virtual-machine\vmx\main.c
+1713207492 source:e:\repomaquinavirtual\virtual-machine\vmx\main.c
 	<stdio.h>
 	<stdlib.h>
 	<string.h>
 	"operaciones.h"
 
-1712803396 source:e:\repomaquinavirtual\virtual-machine\vmx\mv.c
+1713207193 source:e:\repomaquinavirtual\virtual-machine\vmx\mv.c
 	<string.h>
 	<stdlib.h>
 	"mv.h"
+	"constantes.h"
 
 1712879444 source:c:\users\vanci\onedrive\escritorio\virtual-machine\vmx\operaciones.c
 	"operaciones.h"
@@ -64,4 +65,31 @@
 	<string.h>
 	<stdlib.h>
 	"mv.h"
+
+1713052113 e:\repomaquinavirtual\virtual-machine\vmx\constantes.h
+
+1713207492 source:e:\ingenieria informatica\3.1\arquitectura de computadora\vmx\main.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	"operaciones.h"
+
+1712715929 e:\ingenieria informatica\3.1\arquitectura de computadora\vmx\operaciones.h
+	"mv.h"
+
+1713204933 e:\ingenieria informatica\3.1\arquitectura de computadora\vmx\mv.h
+	<stdio.h>
+
+1713207193 source:e:\ingenieria informatica\3.1\arquitectura de computadora\vmx\mv.c
+	<string.h>
+	<stdlib.h>
+	"mv.h"
+	"constantes.h"
+
+1713052113 e:\ingenieria informatica\3.1\arquitectura de computadora\vmx\constantes.h
+
+1713207365 source:e:\ingenieria informatica\3.1\arquitectura de computadora\vmx\operaciones.c
+	"operaciones.h"
+	<stdlib.h>
+	<time.h>
 

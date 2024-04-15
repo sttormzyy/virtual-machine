@@ -10,18 +10,33 @@ typedef struct {
 } TMV;
 
 void registerMask(int secReg, int *corr, int *mask);
+
 void iniciaMV(TMV *mv, int programSize);
-int leeHeader(int *programSize, char *filename,TMV *mv);
+
+int readHeader(int *programSize, char *filename,TMV *mv);
+
 void cargaCodigo(TMV *mv, char *filename, int programSize);
+
 char instruccionActual(TMV mv);
+
 int instruccionValida(char codOp);
+
 int segmentoCheck(TMV mv,int oprnd, int tipo);
+
 void readOperand(TMV *mv, int tipo, int *operador);
+
 int operandValue(TMV mv, int operand, int tipo);
+
 int direccion(TMV mv, int IP);
+
 void disassembler(TMV mv, int programSize);
+
 int checkParam(int argc, char *argv[], char strCmp[]);
+
 void pasoDis(TMV *mv, char instruccion);
+
 void mostrarOp(int tipo, int valor);
+
 void readOperandDis(TMV *mv, int tipo, int *operador);
-void fillExtraDis(int opB, int opA);
+
+void fillExtraDis(int extraSpace);
