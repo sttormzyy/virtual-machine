@@ -299,8 +299,8 @@ void NOT(int A, int opA, TMV *mv)
 {
     int val = operandValue(*mv, A, opA);
 
-    MOV(A, opA, ~A, 1, mv);
-    NZ(mv,~A);
+    MOV(A, opA, ~val, 1, mv);
+    NZ(mv,~val);
 }
 
 void RND(int A, int opA, int B, int opB, TMV *mv)

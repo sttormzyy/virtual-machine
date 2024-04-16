@@ -102,13 +102,15 @@ int instruccionValida(char codOp)
 //verifica que el operando de memoria o los jumps no se pasen de segmento
 int segmentoCheck(TMV mv,int oprnd,int tipo)
 {
-    int posTabla;
+    int posTabla, dir, tope, comienzo;
 
     switch(tipo)
     {
         case 1: //verifica q el operando de memoria no se salga de segmento
-            posTabla = (mv.registros[(oprnd>>16) & 0xF] >> 16) & 0x1;
-            return direccion(mv,oprnd) <= (((mv.tablaSegmentos[posTabla]>>16) & 0xFFFF) + (mv.tablaSegmentos[posTabla]&0xFFFF));
+            dir = direccion(mv,oprnd);
+            tope = (((mv.tablaSegmentos[1]>>16) & 0xFFFF) + (mv.tablaSegmentos[1]&0xFFFF));
+            comienzo = (mv.tablaSegmentos[1]>>16) & 0xFFFF;
+            return  (dir >= comienzo) && (dir <= tope);
         break;
 
         case 2: //verifica que el jump no se salga de segmento
@@ -116,7 +118,7 @@ int segmentoCheck(TMV mv,int oprnd,int tipo)
         break;
 
         case 3: //verifica que el IP no se salga de segmento
-            return (mv.registros[5]&0xFFFF) <= (mv.tablaSegmentos[0]&0xFFFF);
+            return (mv.registros[5]&0xFFFF) < (mv.tablaSegmentos[0]&0xFFFF);
    }
  return 0;
 }
@@ -191,9 +193,10 @@ int operandValue(TMV mv, int operand, int tipo)
 int direccion(TMV mv, int memoryOp)
 {
 	char codReg = (memoryOp >> 16) & 0xFF;
-	int offset = (memoryOp & 0xFFFF) + (mv.registros[codReg] & 0xFFFF);
+    short int offsetReg = (mv.registros[codReg] & 0xFFFF);
+	short int offsetInst = (memoryOp & 0xFFFF);
 	int inicioSegmento = (mv.tablaSegmentos[(mv.registros[codReg] >> 16) & 0x1]>>16) & 0xFFFF;
-	return inicioSegmento + offset;
+	return inicioSegmento + offsetReg + offsetInst;
 }
 
 
@@ -310,7 +313,7 @@ void OperandDis(TMV *mv, int tipo, int *operador)
     char operadorSize = (~tipo) & 0x3;
     int i, IP = mv->registros[5];
     *operador = 0;
-
+    short int aux;
   //muestro en hexa la info de los operandos y los guardo
     for (i = 0; i < operadorSize; ++i)
      {
@@ -318,6 +321,11 @@ void OperandDis(TMV *mv, int tipo, int *operador)
        *operador = (*operador << 8) | (mv->memoria[IP++] & 0xFF);
      }
     mv->registros[5] = IP;
+
+    if(tipo == 1){
+        aux = *operador;
+        *operador = aux;
+	}
 }
 
 void fillExtraDis(int extraSpace)

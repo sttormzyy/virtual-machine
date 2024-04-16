@@ -37,6 +37,6 @@ void pasoDis(TMV *mv, char instruccion);
 
 void mostrarOp(int tipo, int valor);
 
-void readOperandDis(TMV *mv, int tipo, int *operador);
+void OperandDis(TMV *mv, int tipo, int *operador);
 
 void fillExtraDis(int extraSpace);

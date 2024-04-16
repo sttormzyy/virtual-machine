@@ -30,15 +30,15 @@ int main(int argc, char *argv[]){
         }
 
         //procesa programa hasta encontrar un STOP o que ocurra un error (segmento invalido,div por 0,etc)
-        while (((instruccionActual(mv)&0xFF) != 0xFF) && !mv.errorFlag)
+        while (!mv.errorFlag && ((instruccionActual(mv)&0xFF) != 0xFF))
         {
             procesaInstruccion(&mv, operaciones);
-            mv.errorFlag = !(segmentoCheck(mv,0,3)); //chequea q el ip apunte dentro de code segment
+            if (!mv.errorFlag)
+                mv.errorFlag = !(segmentoCheck(mv,0,3)); //chequea q el ip apunte dentro de code segment
         }
+    }
 
-        reportStatus(mv.errorFlag);
-  }
-
+    reportStatus(mv. errorFlag);
     scanf("%d",&d);
     return 0;
 }
@@ -63,8 +63,8 @@ void procesaInstruccion(TMV *mv, void (*operaciones[])()){
 
         //si el operando es de memoria chequeo q no se salga de segmento la direccion a donde tengo q buscar el dato, sino lo doy como valido
         //chequearlo antes de ir a la operacion me facilita no tener q estar chequeandolo adentro de cada operacion
-        vA = (opA == 0)?segmentoCheck(*mv,opA,1):1;
-        vB = (opB == 0)?segmentoCheck(*mv,opB,1):1;
+        vA = (opA == 0)?segmentoCheck(*mv,A,1):1;
+        vB = (opB == 0)?segmentoCheck(*mv,B,1):1;
 
         if(vA && vB){
 
