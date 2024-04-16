@@ -27,7 +27,7 @@ void readOperand(TMV *mv, int tipo, int *operador);
 
 int operandValue(TMV mv, int operand, int tipo);
 
-int direccion(TMV mv, int IP);
+int direccion(TMV mv, int ip);
 
 void disassembler(TMV mv, int programSize);
 

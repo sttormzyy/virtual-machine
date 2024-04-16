@@ -10,6 +10,7 @@ void reportStatus(int estado);
 int main(int argc, char *argv[]){
     TMV mv;
     int programSize = 0, valido,d;
+
     void (*operaciones[27])() = {MOV, ADD, SUB, SWAP, MUL, DIV, CMP, SHL, SHR, AND, OR, XOR,
                                RND, NULL, NULL, NULL, SYS, JMP, JZ, JP, JN, JNZ, JNP, JNN, LDL, LDH, NOT};
 
@@ -34,7 +35,7 @@ int main(int argc, char *argv[]){
         {
             procesaInstruccion(&mv, operaciones);
             if (!mv.errorFlag)
-                mv.errorFlag = !(segmentoCheck(mv,0,3)); //chequea q el ip apunte dentro de code segment
+                mv.errorFlag = !(segmentoCheck(mv,CS,3)); //chequea q el ip apunte dentro de code segment
         }
     }
 

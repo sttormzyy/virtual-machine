@@ -3,6 +3,7 @@
 #include "mv.h"
 #include "constantes.h"
 
+
 void registerMask(int secReg, int *corr, int *mask)
 {
     *mask = 0xFFFFFFFF;
@@ -55,8 +56,7 @@ int readHeader( int *programSize, char *filename, TMV *mv)
 
 		// lee el tamanio del programa
         fread(size, sizeof(char), 2, arch);
-
-        *programSize = (size[0] << 8) | size[1];
+        *programSize = ((size[0] & 0xFF) << 8) | (size[1] & 0xFF);
         *programSize = abs(*programSize);
 
         // valido tamanio del programa
@@ -118,7 +118,7 @@ int segmentoCheck(TMV mv,int oprnd,int tipo)
         break;
 
         case 3: //verifica que el IP no se salga de segmento
-            return (mv.registros[5]&0xFFFF) < (mv.tablaSegmentos[0]&0xFFFF);
+            return (mv.registros[IP]&0xFFFF) < (mv.tablaSegmentos[0]&0xFFFF);
    }
  return 0;
 }
@@ -126,16 +126,16 @@ int segmentoCheck(TMV mv,int oprnd,int tipo)
 void readOperand(TMV *mv, int tipo, int *operador)
 {
 	char operadorSize = (~tipo) & 0x3;
-	int i, IP = mv->registros[5];
+	int i, ip = mv->registros[IP];
 	short int aux;
 	*operador = 0;
 
 	// obtengo la informacion que esta en memoria sobre el operador
 	for (i = 0; i < operadorSize; ++i)
     {
-		*operador = (*operador << 8) | (mv->memoria[IP++] & 0xFF);
+		*operador = (*operador << 8) | (mv->memoria[ip++] & 0xFF);
 	}
-	mv->registros[5] = IP;
+	mv->registros[IP] = ip;
 
     //vi que si haciamos mov a un registro un inmediato negativo, ponele MOV EBX,-34 no se acarreaba el signo en todo
     // el registro xq inicializamos arriba el operador en 0 entonces los 16 bits mas significativos siempre estan en 0, entonces lo q hago
@@ -204,14 +204,14 @@ int direccion(TMV mv, int memoryOp)
 
 void disassembler(TMV mv, int programSize)
 {
-    int IP = mv.registros[5];
+    int ip = mv.registros[IP];
 
-    while (mv.registros[5] < programSize && !mv.errorFlag)
+    while (mv.registros[IP] < programSize && !mv.errorFlag)
     {
         pasoDis(&mv, instruccionActual(mv));
     }
     printf("\n\n");
-    mv.registros[5] = IP;
+    mv.registros[IP] = ip;
 }
 
 void pasoDis(TMV *mv, char instruccion) {
@@ -220,7 +220,7 @@ void pasoDis(TMV *mv, char instruccion) {
 
     if (instruccionValida(codOp))
     {
-        printf("[%04X] ", mv->registros[5]);
+        printf("[%04X] ", mv->registros[IP]);
 
     //determino tipos de operandos
         opB = ((instruccion & 0xC0) >> 6) & 0x03;
@@ -230,7 +230,7 @@ void pasoDis(TMV *mv, char instruccion) {
     //muestro en hexa la instruccion
         printf("%02X ", instruccion & 0xFF);
 
-       (mv->registros[5])++;
+       (mv->registros[IP])++;
 
     //muestro operandos en hexa y obtengo su valor
        OperandDis(mv, opB, &B);
@@ -247,6 +247,7 @@ void pasoDis(TMV *mv, char instruccion) {
       {
           mostrarOp(opA, A);
           putchar(',');
+          putchar(' ');
           mostrarOp(opB, B);
       }
 
@@ -272,7 +273,7 @@ int checkParam(int argc, char *argv[], char strCmp[])
 void mostrarOp(int tipo, int valor)
 {
     int secReg, codReg;
-
+    short int corrSigno;
     switch(tipo)
     {
         //Memoria
@@ -284,9 +285,15 @@ void mostrarOp(int tipo, int valor)
 
             printf("[%s", regNombres[codReg]);
             valor &= 0xFFFF;
+            corrSigno = valor;
+            valor = corrSigno;
 
-            if(valor)
-                printf(" + %*d]",(valor<100)?2:4, valor);
+            if(valor) {
+                if (valor > 0)
+                    printf("+%d]", valor);
+                else
+                    printf("%d]", valor);
+            }
             else
                 printf("]");
         break;
@@ -311,16 +318,16 @@ void mostrarOp(int tipo, int valor)
 void OperandDis(TMV *mv, int tipo, int *operador)
 {
     char operadorSize = (~tipo) & 0x3;
-    int i, IP = mv->registros[5];
+    int i, ip = mv->registros[IP];
     *operador = 0;
     short int aux;
   //muestro en hexa la info de los operandos y los guardo
     for (i = 0; i < operadorSize; ++i)
      {
-        printf("%02X ", (mv->memoria[IP] & 0xFF));
-       *operador = (*operador << 8) | (mv->memoria[IP++] & 0xFF);
+        printf("%02X ", (mv->memoria[ip] & 0xFF));
+       *operador = (*operador << 8) | (mv->memoria[ip++] & 0xFF);
      }
-    mv->registros[5] = IP;
+    mv->registros[IP] = ip;
 
     if(tipo == 1){
         aux = *operador;

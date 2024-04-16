@@ -93,26 +93,27 @@
 	<stdlib.h>
 	<time.h>
 
-1713232629 source:c:\users\windows11\desktop\programacion\virtual-machine\vmx\mv.c
+1713308632 source:c:\users\windows11\desktop\programacion\virtual-machine\vmx\mv.c
 	<string.h>
 	<stdlib.h>
 	"mv.h"
 	"constantes.h"
 
-1713228292 c:\users\windows11\desktop\programacion\virtual-machine\vmx\mv.h
+1713308794 c:\users\windows11\desktop\programacion\virtual-machine\vmx\mv.h
 	<stdio.h>
+	"constantes.h"
 
-1713221423 c:\users\windows11\desktop\programacion\virtual-machine\vmx\constantes.h
+1713307553 c:\users\windows11\desktop\programacion\virtual-machine\vmx\constantes.h
 
-1713228368 source:c:\users\windows11\desktop\programacion\virtual-machine\vmx\operaciones.c
+1713308737 source:c:\users\windows11\desktop\programacion\virtual-machine\vmx\operaciones.c
 	"operaciones.h"
 	<stdlib.h>
 	<time.h>
 
-1713221423 c:\users\windows11\desktop\programacion\virtual-machine\vmx\operaciones.h
+1713308803 c:\users\windows11\desktop\programacion\virtual-machine\vmx\operaciones.h
 	"mv.h"
 
-1713232404 source:c:\users\windows11\desktop\programacion\virtual-machine\vmx\main.c
+1713308725 source:c:\users\windows11\desktop\programacion\virtual-machine\vmx\main.c
 	<stdio.h>
 	<stdlib.h>
 	<string.h>

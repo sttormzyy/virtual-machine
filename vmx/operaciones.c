@@ -9,12 +9,12 @@ void NZ(TMV *mv, int resultado)
 
     if(resultado<0)
     {
-        mv->registros[8] |= 0x80000000;
+        mv->registros[CC] |= 0x80000000;
     }
 
     if(!resultado)
     {
-    mv->registros[8] |= 0x40000000;
+    mv->registros[CC] |= 0x40000000;
     }
 
 }
@@ -85,7 +85,7 @@ void DIV(int A, int opA, int B, int opB, TMV *mv)
     if(valB)
     {
         MOV(A, opA, valA/valB, 1, mv);
-        MOV(0b00001001, 2, valA%valB, 1, mv); //muevo el % a AC
+        MOV(AC, 2, valA%valB, 1, mv); //muevo el % a AC
         NZ(mv,valA/valB);
     }else
     {
@@ -96,7 +96,6 @@ void DIV(int A, int opA, int B, int opB, TMV *mv)
 void CMP(int A, int opA, int B, int opB, TMV *mv)
 {
     int valA = operandValue(*mv, A, opA), valB = operandValue(*mv, B, opB);
-
     NZ(mv,valA-valB);
 }
 
@@ -143,9 +142,9 @@ void XOR(int A, int opA, int B, int opB, TMV *mv)
 void SYS(int A, int opA, TMV *mv)
 {
     int dir = ((mv->tablaSegmentos[(mv->registros[13]>>16)&0x1]>>16)&0xFFFF) + (mv->registros[13]&0xFFFF);
-    int cant = mv->registros[12]&0xFF;
-    int tam = (mv->registros[12]>>8)&0xFF;
-    int modo = mv->registros[10]&0xF;
+    int cant = mv->registros[ECX]&0xFF;
+    int tam = (mv->registros[ECX]>>8)&0xFF;
+    int modo = mv->registros[EAX]&0xF;
     int x,i,k;
 
     switch(A)
@@ -202,20 +201,15 @@ void input(int *x,int modo)
 
 void output(int x, int modo)
 {
-    switch(modo)
-    {
-        case 1:
-            printf("#%d\n",x);
-        break;
-        case 2:
-            printf("%c\n",x);
-        break;
-        case 4:
-            printf("@%o\n",x);
-        break;
-        case 8:
-            printf("0x%X\n",x);
-   }
+    if ((modo & 0x08) == 0x08)
+        printf("%%%X ", x);
+    if ((modo & 0x04) == 0x04)
+        printf("@%o ", x);
+    if ((modo & 0x02) == 0x02)
+        printf("'%c ", x);
+    if ((modo & 0x01) == 0x01)
+        printf("#%d", x);
+   putchar('\n');
 }
 
 void jump(int salto, int codOp, TMV *mv, void (*operaciones[])())
@@ -230,69 +224,69 @@ void jump(int salto, int codOp, TMV *mv, void (*operaciones[])())
 
 void JMP(int salto, TMV *mv)
 {
-    mv->registros[5] = mv->registros[0]+salto;
+    mv->registros[IP] = mv->registros[CS]+salto;
 };
 
 void JZ(int salto, TMV *mv)
 {
-    if(mv->registros[8]&0x40000000)
+    if(mv->registros[CC]&0x40000000)
     {
-        mv->registros[5] = mv->registros[0]+salto;
+        mv->registros[IP] = mv->registros[CS]+salto;
     }
 };
 
 void JP(int salto, TMV *mv)
 {
-    if((!(mv->registros[8]&0x80000000)) && (!(mv->registros[8]&0x40000000)))
+    if((!(mv->registros[CC]&0x80000000)) && (!(mv->registros[CC]&0x40000000)))
     {
-        mv->registros[5] = mv->registros[0]+salto;
+        mv->registros[IP] = mv->registros[CS]+salto;
 
     }
 };
 
 void JN(int salto, TMV *mv)
 {
-    if(mv->registros[8]&0x80000000)
+    if(mv->registros[CC]&0x80000000)
     {
-        mv->registros[5] = mv->registros[0]+salto;
+        mv->registros[IP] = mv->registros[CS]+salto;
     }
 };
 
 void JNZ(int salto, TMV *mv)
 {
-    if(!(mv->registros[8]&0x40000000))
+    if(!(mv->registros[CC]&0x40000000))
     {
-        mv->registros[8] = mv->registros[0]+salto;
+        mv->registros[CC] = mv->registros[CS]+salto;
 
     }
 };
 
 void JNP(int salto, TMV *mv)
 {
-    if((mv->registros[8]&0x80000000) || (mv->registros[8]&0x40000000))
+    if((mv->registros[CC]&0x80000000) || (mv->registros[8]&0x40000000))
     {
-        mv->registros[5] = mv->registros[0]+salto;
+        mv->registros[IP] = mv->registros[CS]+salto;
     }
 };
 
 void JNN(int salto, TMV *mv)
 {
-    if(!(mv->registros[8]&0x80000000))
+    if(!(mv->registros[CC]&0x80000000))
     {
-        mv->registros[5] = mv->registros[0]+salto;
+        mv->registros[IP] = mv->registros[CS]+salto;
     }
 };
 
 void LDL(int A, int opA, TMV *mv)
 {
     int val = operandValue(*mv,A,opA);
-    mv->registros[9] = (mv->registros[9]&0xFFFF0000) | (val&0xFFFF);
+    mv->registros[AC] = (mv->registros[AC]&0xFFFF0000) | (val&0xFFFF);
 }
 
 void LDH(int A, int opA, TMV *mv)
 {
     int val = operandValue(*mv,A,opA);
-    mv->registros[9] = (mv->registros[9]&0xFFFF) | ((val&0xFFFF)<<16);
+    mv->registros[AC] = (mv->registros[AC]&0xFFFF) | ((val&0xFFFF)<<16);
 }
 
 void NOT(int A, int opA, TMV *mv)
