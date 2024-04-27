@@ -1,11 +1,11 @@
-#include <stdio.h>
+#include "constantes.h"
 
 #define MEMORIA_SIZE 16384
 
 typedef struct {
 	char memoria[MEMORIA_SIZE];
 	int registros[16];
-	int tablaSegmentos[2];
+	int tablaSegmentos[8];
 	int errorFlag;
 } TMV;
 
@@ -29,14 +29,5 @@ int operandValue(TMV mv, int operand, int tipo);
 
 int direccion(TMV mv, int ip);
 
-void disassembler(TMV mv, int programSize);
 
-int checkParam(int argc, char *argv[], char strCmp[]);
 
-void pasoDis(TMV *mv, char instruccion);
-
-void mostrarOp(int tipo, int valor);
-
-void OperandDis(TMV *mv, int tipo, int *operador);
-
-void fillExtraDis(int extraSpace);

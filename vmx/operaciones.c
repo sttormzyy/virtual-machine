@@ -5,7 +5,7 @@
 //modifico los bits N,Z de acuerdo al resultado de la ultima operacion logico/matematica
 void NZ(TMV *mv, int resultado)
 {
-    mv->registros[8] &= 0x3FFFFFFF;
+    mv->registros[CC] &= 0x3FFFFFFF;
 
     if(resultado<0)
     {
@@ -21,7 +21,7 @@ void NZ(TMV *mv, int resultado)
 
 void MOV(int A, int opA, int B, int opB, TMV *mv)
 {
-    int secReg, mask, codReg, dir, i;
+    int secReg, mask, codReg, dir, i, cantCelda;
     int valB = operandValue(*mv, B, opB), corr;
 
     switch(opA)
@@ -29,9 +29,10 @@ void MOV(int A, int opA, int B, int opB, TMV *mv)
         //MOV a memoria
         case 0:
             dir = direccion(*mv, A);
-            for (i = 0; i < 4; ++i)
+            cantCelda = (~((A>>22)&0x3))&0x3;
+            for (i = cantCelda; i >=0; i--)
             {
-                mv->memoria[dir + i] = valB >> ((3-i)*8);
+                mv->memoria[dir++] = valB >> (i*8);
             }
         break;
 
@@ -141,7 +142,7 @@ void XOR(int A, int opA, int B, int opB, TMV *mv)
 
 void SYS(int A, int opA, TMV *mv)
 {
-    int dir = ((mv->tablaSegmentos[(mv->registros[13]>>16)&0x1]>>16)&0xFFFF) + (mv->registros[13]&0xFFFF);
+    int dir = ((mv->tablaSegmentos[(mv->registros[EDX]>>16)&0x1]>>16)&0xFFFF) + (mv->registros[EDX]&0xFFFF);
     int cant = mv->registros[ECX]&0xFF;
     int tam = (mv->registros[ECX]>>8)&0xFF;
     int modo = mv->registros[EAX]&0xF;
@@ -171,7 +172,7 @@ void SYS(int A, int opA, TMV *mv)
                 {
                     x |= (mv->memoria[dir++]<<(8*k))&(0xFF<<8*k);
                 }
-                output(x,modo);
+                output(x,modo,tam-1);
            }
         break;
   }
@@ -199,18 +200,26 @@ void input(int *x,int modo)
     }
 }
 
-void output(int x, int modo)
+void output(int x, int modo,int tam)
 {
-    if ((modo & 0x08) == 0x08)
+   if ((modo & 0x08) == 0x08)
         printf("%%%X ", x);
     if ((modo & 0x04) == 0x04)
         printf("@%o ", x);
-    if ((modo & 0x02) == 0x02)
-        printf("'%c ", x);
+    if ((modo & 0x02) == 0x02) {
+        printf("'");
+     for(int i=tam;i>=0;i--)
+        if ((0xFF & (x>>i*8)) <= 0x1F) {
+            printf(".");
+        } else
+            printf("%c", x>>8*i);
+        printf(" ");
+    }
     if ((modo & 0x01) == 0x01)
         printf("#%d", x);
-   putchar('\n');
+    putchar('\n');
 }
+
 
 void jump(int salto, int codOp, TMV *mv, void (*operaciones[])())
 {

@@ -50,7 +50,15 @@ void LDH(int A, int opA, TMV *mv);
 
 void NOT(int A, int opA, TMV *mv);
 
+void PUSH(int A, int opA, TMV *mv);
+
+void POP(int A, int opA, TMV *mv);
+
+void CALL(int A, int opA, TMV *mv);
+
+void RET();
+
 void input(int *x,int modo);
 
-void output(int x, int modo);
+void output(int x, int modo, int tam);
 

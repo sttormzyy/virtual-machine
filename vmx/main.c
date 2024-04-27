@@ -1,7 +1,7 @@
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "operaciones.h"
+#include "disassembler.h"
 
 
 void procesaInstruccion(TMV *mv, void (*operaciones[])());
@@ -11,11 +11,13 @@ int main(int argc, char *argv[]){
     TMV mv;
     int programSize = 0, valido,d;
 
-    void (*operaciones[27])() = {MOV, ADD, SUB, SWAP, MUL, DIV, CMP, SHL, SHR, AND, OR, XOR,
-                               RND, NULL, NULL, NULL, SYS, JMP, JZ, JP, JN, JNZ, JNP, JNN, LDL, LDH, NOT};
+    void (*operaciones[])() = {MOV, ADD, SUB, SWAP, MUL, DIV, CMP, SHL, SHR, AND, OR, XOR,
+                                 RND, NULL, NULL, NULL, SYS, JMP, JZ, JP, JN, JNZ, JNP, JNN,
+                                 LDL, LDH, NOT};
 
     //verifica  q el archivo sea del tipo correcto y almacena el tamanio del programa en bytes
-    valido = readHeader(&programSize, argv[1],&mv);
+    valido = readHeader(&programSize,argv[1],&mv);
+
 
     if (valido)
     {
@@ -40,7 +42,7 @@ int main(int argc, char *argv[]){
     }
 
     reportStatus(mv. errorFlag);
-    scanf("%d",&d);
+    scanf(" %d",&d);
     return 0;
 }
 

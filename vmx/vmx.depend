@@ -1,121 +1,34 @@
 # depslib dependency file v1.0
-1712770953 source:e:\ingenieria informatica\3.1\arquitectura de computadora\vmx\vmx\main.c
-	<stdio.h>
-	<stdlib.h>
+1713809136 source:e:\ingenieria informatica\3.1\arquitectura de computadora\gkkg\vmx\disassembler.c
 	<string.h>
+	<stdio.h>
 	"operaciones.h"
 
-1712715929 e:\ingenieria informatica\3.1\arquitectura de computadora\vmx\vmx\operaciones.h
+1713809193 e:\ingenieria informatica\3.1\arquitectura de computadora\gkkg\vmx\operaciones.h
 	"mv.h"
 
-1712712994 e:\ingenieria informatica\3.1\arquitectura de computadora\vmx\vmx\mv.h
-	<stdio.h>
-
-1712770040 source:e:\ingenieria informatica\3.1\arquitectura de computadora\vmx\vmx\mv.c
-	<string.h>
-	<stdlib.h>
-	"mv.h"
-
-1712770302 source:e:\ingenieria informatica\3.1\arquitectura de computadora\vmx\vmx\operaciones.c
-	"operaciones.h"
-	<stdlib.h>
-	<time.h>
-
-1713208211 source:e:\repomaquinavirtual\virtual-machine\vmx\operaciones.c
-	"operaciones.h"
-	<stdlib.h>
-	<time.h>
-
-1712715929 e:\repomaquinavirtual\virtual-machine\vmx\operaciones.h
-	"mv.h"
-
-1713204933 e:\repomaquinavirtual\virtual-machine\vmx\mv.h
-	<stdio.h>
-
-1713207492 source:e:\repomaquinavirtual\virtual-machine\vmx\main.c
-	<stdio.h>
-	<stdlib.h>
-	<string.h>
-	"operaciones.h"
-
-1713207193 source:e:\repomaquinavirtual\virtual-machine\vmx\mv.c
-	<string.h>
-	<stdlib.h>
-	"mv.h"
+1713833383 e:\ingenieria informatica\3.1\arquitectura de computadora\gkkg\vmx\mv.h
 	"constantes.h"
 
-1712879444 source:c:\users\vanci\onedrive\escritorio\virtual-machine\vmx\operaciones.c
+1713809129 e:\ingenieria informatica\3.1\arquitectura de computadora\gkkg\vmx\constantes.h
+
+1713833458 source:e:\ingenieria informatica\3.1\arquitectura de computadora\gkkg\vmx\main.c
+	<stdlib.h>
+	<string.h>
+	"operaciones.h"
+	"disassembler.h"
+
+1713809129 e:\ingenieria informatica\3.1\arquitectura de computadora\gkkg\vmx\disassembler.h
+
+1713833655 source:e:\ingenieria informatica\3.1\arquitectura de computadora\gkkg\vmx\mv.c
+	<string.h>
+	<stdlib.h>
+	<stdio.h>
+	<math.h>
+	"mv.h"
+
+1713834271 source:e:\ingenieria informatica\3.1\arquitectura de computadora\gkkg\vmx\operaciones.c
 	"operaciones.h"
 	<stdlib.h>
 	<time.h>
-
-1712879444 c:\users\vanci\onedrive\escritorio\virtual-machine\vmx\operaciones.h
-	"mv.h"
-
-1712985225 c:\users\vanci\onedrive\escritorio\virtual-machine\vmx\mv.h
-	<stdio.h>
-
-1712981364 source:c:\users\vanci\onedrive\escritorio\virtual-machine\vmx\main.c
-	<stdio.h>
-	<stdlib.h>
-	<string.h>
-	"operaciones.h"
-
-1712985364 source:c:\users\vanci\onedrive\escritorio\virtual-machine\vmx\mv.c
-	<string.h>
-	<stdlib.h>
-	"mv.h"
-
-1713052113 e:\repomaquinavirtual\virtual-machine\vmx\constantes.h
-
-1713207492 source:e:\ingenieria informatica\3.1\arquitectura de computadora\vmx\main.c
-	<stdio.h>
-	<stdlib.h>
-	<string.h>
-	"operaciones.h"
-
-1712715929 e:\ingenieria informatica\3.1\arquitectura de computadora\vmx\operaciones.h
-	"mv.h"
-
-1713204933 e:\ingenieria informatica\3.1\arquitectura de computadora\vmx\mv.h
-	<stdio.h>
-
-1713207193 source:e:\ingenieria informatica\3.1\arquitectura de computadora\vmx\mv.c
-	<string.h>
-	<stdlib.h>
-	"mv.h"
-	"constantes.h"
-
-1713052113 e:\ingenieria informatica\3.1\arquitectura de computadora\vmx\constantes.h
-
-1713207365 source:e:\ingenieria informatica\3.1\arquitectura de computadora\vmx\operaciones.c
-	"operaciones.h"
-	<stdlib.h>
-	<time.h>
-
-1713308632 source:c:\users\windows11\desktop\programacion\virtual-machine\vmx\mv.c
-	<string.h>
-	<stdlib.h>
-	"mv.h"
-	"constantes.h"
-
-1713308794 c:\users\windows11\desktop\programacion\virtual-machine\vmx\mv.h
-	<stdio.h>
-	"constantes.h"
-
-1713307553 c:\users\windows11\desktop\programacion\virtual-machine\vmx\constantes.h
-
-1713308737 source:c:\users\windows11\desktop\programacion\virtual-machine\vmx\operaciones.c
-	"operaciones.h"
-	<stdlib.h>
-	<time.h>
-
-1713308803 c:\users\windows11\desktop\programacion\virtual-machine\vmx\operaciones.h
-	"mv.h"
-
-1713308725 source:c:\users\windows11\desktop\programacion\virtual-machine\vmx\main.c
-	<stdio.h>
-	<stdlib.h>
-	<string.h>
-	"operaciones.h"
 
