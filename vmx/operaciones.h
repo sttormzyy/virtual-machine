@@ -50,13 +50,23 @@ void LDH(int A, int opA, TMV *mv);
 
 void NOT(int A, int opA, TMV *mv);
 
-void PUSH(int A, int opA, TMV *mv);
+void PUSH(int opB, int B, TMV *mv);
 
-void POP(int A, int opA, TMV *mv);
+void POP(int opA, int A, TMV *mv);
 
 void CALL(int A, int opA, TMV *mv);
 
-void RET();
+void RET(TMV *mv);
+
+void SYS1(int A, int opA, TMV *mv);
+
+void SYS2(int A, int opA, TMV *mv);
+
+void SYS3(int A, int opA, TMV *mv);
+
+void SYS4(int A, int opA, TMV *mv);
+
+void SYS7();
 
 void input(int *x,int modo);
 

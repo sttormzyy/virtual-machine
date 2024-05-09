@@ -13,7 +13,7 @@ int main(int argc, char *argv[]){
 
     void (*operaciones[])() = {MOV, ADD, SUB, SWAP, MUL, DIV, CMP, SHL, SHR, AND, OR, XOR,
                                  RND, NULL, NULL, NULL, SYS, JMP, JZ, JP, JN, JNZ, JNP, JNN,
-                                 LDL, LDH, NOT};
+                                 LDL, LDH, NOT, PUSH, POP, CALL, RET};
 
     //verifica  q el archivo sea del tipo correcto y almacena el tamanio del programa en bytes
     valido = readHeader(&programSize,argv[1],&mv);
