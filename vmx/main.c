@@ -9,27 +9,27 @@ void reportStatus(int estado);
 
 int main(int argc, char *argv[]){
     TMV mv;
-    int programSize = 0, valido,d;
+    int segmentoSizes[6], valido,d;
 
     void (*operaciones[])() = {MOV, ADD, SUB, SWAP, MUL, DIV, CMP, SHL, SHR, AND, OR, XOR,
                                  RND, NULL, NULL, NULL, SYS, JMP, JZ, JP, JN, JNZ, JNP, JNN,
                                  LDL, LDH, NOT, PUSH, POP, CALL, RET};
 
     //verifica  q el archivo sea del tipo correcto y almacena el tamanio del programa en bytes
-    valido = readHeader(&programSize,argv[1],&mv);
+    valido = readHeader(segmentoSizes,argv[1],&mv);
 
 
     if (valido)
     {
-        //cargo el codigo en la memoria principal
-        cargaCodigo(&mv, argv[1], programSize);
-
         //inicializo registros CS,DS,IP y Tabla de Segmento
-        iniciaMV(&mv, programSize);
+        iniciaMV(&mv, segmentoSizes);
+
+        //cargo el codigo en la memoria principal
+        cargaCodigo(&mv, argv[1], segmentoSizes);
 
         if (checkParam(argc, argv, "-d"))
         {
-            disassembler(mv, programSize);
+            disassembler(mv, segmentoSizes[CS]);
         }
 
         //procesa programa hasta encontrar un STOP o que ocurra un error (segmento invalido,div por 0,etc)

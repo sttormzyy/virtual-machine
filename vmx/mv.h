@@ -3,31 +3,34 @@
 #define MEMORIA_SIZE 16384
 
 typedef struct {
-	char memoria[MEMORIA_SIZE];
+	char* memoria;
+	char version;
 	int registros[16];
 	int tablaSegmentos[8];
 	int errorFlag;
 } TMV;
 
-void registerMask(int secReg, int *corr, int *mask);
+void registerMask(int, int *, int *);
 
-void iniciaMV(TMV *mv, int programSize);
+void iniciaMV(TMV *, int);
 
-int readHeader(int *programSize, char *filename,TMV *mv);
+void leeDosBytes(int *, FILE *); 
 
-void cargaCodigo(TMV *mv, char *filename, int programSize);
+int readHeader(int [], char *,TMV *mv);
 
-char instruccionActual(TMV mv);
+void cargaCodigo(TMV *, char *, int );
 
-int instruccionValida(char codOp);
+char instruccionActual(TMV);
 
-int segmentoCheck(TMV mv,int oprnd, int tipo);
+int instruccionValida(char);
 
-void readOperand(TMV *mv, int tipo, int *operador);
+int segmentoCheck(TMV , int, int);
 
-int operandValue(TMV mv, int operand, int tipo);
+void readOperand(TMV *, int, int *);
 
-int direccion(TMV mv, int ip);
+int operandValue(TMV, int, int);
+
+int direccion(TMV, int);
 
 
 

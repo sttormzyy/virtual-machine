@@ -26,27 +26,50 @@ void registerMask(int secReg, int *corr, int *mask)
 	}
 }
 
-void iniciaMV(TMV *mv, int programSize)
+void iniciaMV(TMV *mv, int segmentoSizes[])
 {
-	// CS <- 00 00 00 00 | DS <- 00 01 00 00 | IP <- 00 00 00 00
-	mv->registros[0] = mv->registros[1] = mv->registros[5] = 0;
-	mv->registros[1] |= 0x10000;
+	int posicionTablaSegmento = 0, i, memoriaSizeControl = 0;
+	mv->memoria = (char *) malloc(MEMORIA_SIZE);
+	
+	// carga los registros CS, DS, ES, SS, KS con los valores del header
+	if (segmentoSizes[KS]) {
+		mv->registros[KS] = 0;
+		mv->tablaSegmentos[posicionTablaSegmento] = segmentoSizes[KS];
+		memoriaSizeControl += segmentoSizes[KS];
+		posicionTablaSegmento++;
+	} else
+		mv->registros[KS] = -1;
 
-	// 0| 00    00     PROGRAM_SIZE
-	// 1| PROGRAM_SIZE MEMORY_SIZE-PROGRAM_SIZE
-	mv->tablaSegmentos[0] = mv->tablaSegmentos[1] = 0;
-	mv->tablaSegmentos[0] = programSize;
-	mv->tablaSegmentos[1] = (programSize << 16) | (MEMORIA_SIZE - programSize);
+	for (i = 0; i < 5; ++i) 
+	{
+		if (segmentoSizes[i] != 0) 
+		{
+			mv->registros[i] = posicionTablaSegmento << 16;
+			mv->tablaSegmentos[posicionTablaSegmento] = (memoriaSizeControl << 16) | (segmentoSizes[i] & 0xFFFF);
+			memoriaSizeControl += segmentoSizes[i] & 0xFFFF;
+			posicionTablaSegmento++;
+		} else
+			mv->registros[i] = -1;
+	}
 
+	mv->registros[IP] = (mv->registros[CS] & 0xFFFF0000) | segmentoSizes[IP];
 	mv->errorFlag=0;
 }
 
+void leeDosBytes(int *variableRetorno, FILE *arch) 
+{
+	char size[3];
+    fread(size, sizeof(char), 2, arch);
+    variableRetorno = ((size[0] & 0xFF) << 8) | (size[1] & 0xFF);
+    variableRetorno = abs(variableRetorno);
+}
 
-int readHeader( int *programSize, char *filename, TMV *mv)
+int readHeader( int segmentoSizes[], char *filename, TMV *mv)
 {
 	FILE *arch = fopen(filename, "rb");
-	char tipoArch[6], version, size[3];
-	int d;
+	char tipoArch[6], size[3];
+	int d, i, memoriaSizeControl = 0;
+
 
 	fread(tipoArch, sizeof(char), 5, arch);
 
@@ -54,20 +77,28 @@ int readHeader( int *programSize, char *filename, TMV *mv)
 	if (!strcmp(tipoArch, "VMX24"))
     {
 		// lee la version
-		fread(&version, sizeof(char), 1, arch);
+		fread(&(mv->version), sizeof(char), 1, arch);
 
-		// lee el tamanio del programa
-        fread(size, sizeof(char), 2, arch);
-        *programSize = ((size[0] & 0xFF) << 8) | (size[1] & 0xFF);
-        *programSize = abs(*programSize);
+		// lee el tamanio de los segmentos y el offset del IP
+		if (mv->version == 2) {
+			for (i = 0; i < 6; ++i) {
+				leeDosBytes(&(segmentoSizes[i]), arch);
+				memoriaSizeControl += segmentoSizes[i];
+			}
+		}
+		else {
+			leeDosBytes(&(segmentoSizes[CS]), arch);
+			segmentoSizes[DS] = MEMORIA_SIZE - segmentoSizes[CS];
+			segmentoSizes[IP] = segmentoSizes[KS] = segmentoSizes[ES] = segmentoSizes[SS] = 0;
+		}
 
         // valido tamanio del programa
-        if (*programSize!=0  && *programSize<=MEMORIA_SIZE)
+        if (segmentoSizes[0]!=0)
         {
             fclose(arch);
             return 1;
         }else
-         {
+        {
             mv->errorFlag=5; // el tamanio es 0 o es mayor q el de la memoria
             fclose(arch);
             return 0;
@@ -86,7 +117,12 @@ void cargaCodigo(TMV *mv, char *filename, int programSize)
 
 	// salta el header
 	fseek(arch, 18, SEEK_SET);
-	fread(mv->memoria, sizeof(char), programSize, arch);
+
+	if (mv->registros[KS] != -1) {
+		fread((char *)((int) mv->memoria + mv->registros[KS] & 0xFFFF), sizeof(char), programSize, arch);
+		fread(mv->memoria, sizeof(char), mv->tablaSegmentos[0] & 0xFFFF, arch);
+	} else
+		fread(mv->memoria, sizeof(char), programSize, arch);
 
 	for(int i=0;i<programSize;i++)
     {
