@@ -29,8 +29,8 @@ void registerMask(int secReg, int *corr, int *mask)
 void iniciaMV(TMV *mv, int segmentoSizes[])
 {
 	int posicionTablaSegmento = 0, i, memoriaSizeControl = 0;
-	mv->memoria = (char *) malloc(MEMORIA_SIZE);
-	
+	mv->memoria = (char *) malloc(mv->memorySize);
+
 	// carga los registros CS, DS, ES, SS, KS con los valores del header
 	if (segmentoSizes[KS]) {
 		mv->registros[KS] = 0;
@@ -40,9 +40,9 @@ void iniciaMV(TMV *mv, int segmentoSizes[])
 	} else
 		mv->registros[KS] = -1;
 
-	for (i = 0; i < 5; ++i) 
+	for (i = 0; i < 5; ++i)
 	{
-		if (segmentoSizes[i] != 0) 
+		if (segmentoSizes[i] != 0)
 		{
 			mv->registros[i] = posicionTablaSegmento << 16;
 			mv->tablaSegmentos[posicionTablaSegmento] = (memoriaSizeControl << 16) | (segmentoSizes[i] & 0xFFFF);
@@ -52,120 +52,124 @@ void iniciaMV(TMV *mv, int segmentoSizes[])
 			mv->registros[i] = -1;
 	}
 
+	//inicializo IP con el offset correspondiente
 	mv->registros[IP] = (mv->registros[CS] & 0xFFFF0000) | segmentoSizes[IP];
+    mv->registros[SP] = mv->registros[SS] | segmentoSizes[SS];
 	mv->errorFlag=0;
 }
 
-void leeDosBytes(int *variableRetorno, FILE *arch) 
+void leeDosBytes(int *variableRetorno, FILE *arch)
 {
 	char size[3];
     fread(size, sizeof(char), 2, arch);
-    variableRetorno = ((size[0] & 0xFF) << 8) | (size[1] & 0xFF);
-    variableRetorno = abs(variableRetorno);
+    *variableRetorno = ((size[0] & 0xFF) << 8) | (size[1] & 0xFF);
+    *variableRetorno = abs(*variableRetorno);
 }
 
-int readHeader( int segmentoSizes[], char *filename, TMV *mv)
+void inicializacion( int segmentoSizes[], char *filename1, TMV *mv)
 {
-	FILE *arch = fopen(filename, "rb");
-	char tipoArch[6], size[3];
-	int d, i, memoriaSizeControl = 0;
+	FILE *arch;
+	char tipoArch[6], version;
+	int d, i, memoriaSizeControl = 0, memorySize;
 
 
-	fread(tipoArch, sizeof(char), 5, arch);
-
-
-	if (!strcmp(tipoArch, "VMX24"))
+	if(strstr(filename1,".vmx") != NULL) // proceso .vmx
     {
-		// lee la version
-		fread(&(mv->version), sizeof(char), 1, arch);
+        arch = fopen(filename1, "rb");
 
-		// lee el tamanio de los segmentos y el offset del IP
-		if (mv->version == 2) {
-			for (i = 0; i < 6; ++i) {
-				leeDosBytes(&(segmentoSizes[i]), arch);
-				memoriaSizeControl += segmentoSizes[i];
-			}
-		}
-		else {
-			leeDosBytes(&(segmentoSizes[CS]), arch);
-			segmentoSizes[DS] = MEMORIA_SIZE - segmentoSizes[CS];
-			segmentoSizes[IP] = segmentoSizes[KS] = segmentoSizes[ES] = segmentoSizes[SS] = 0;
-		}
+        fread(tipoArch, sizeof(char), 5, arch);
+        fread(&version, sizeof(char), 1, arch);
+
+        switch(version)
+        {
+            case 1:
+                leeDosBytes(&(segmentoSizes[CS]), arch);
+                segmentoSizes[DS] = MEMORIA_SIZE - segmentoSizes[CS];
+                segmentoSizes[IP] = segmentoSizes[KS] = segmentoSizes[ES] = segmentoSizes[SS] = 0;
+                fseek(arch, 8, SEEK_SET);
+                break;
+            case 2:
+                for (i = 0; i < 6; ++i)
+                {
+                    leeDosBytes(&(segmentoSizes[i]), arch);
+                    memoriaSizeControl += segmentoSizes[i];
+                }
+                fseek(arch, 18, SEEK_SET);
+                break;
+        }
 
         // valido tamanio del programa
-        if (segmentoSizes[0]!=0)
+        if (segmentoSizes[CS]!=0 && memoriaSizeControl<=MEMORIA_SIZE)
         {
-            fclose(arch);
-            return 1;
+            iniciaMV(mv, segmentoSizes);
+            cargaCodigo(mv, arch, segmentoSizes[CS]);
         }else
-        {
             mv->errorFlag=5; // el tamanio es 0 o es mayor q el de la memoria
-            fclose(arch);
-            return 0;
-        }
-	}else
-	{
-         mv->errorFlag = 4; //tipo de archivo invalido no es de la vmx
-         fclose(arch);
-         return 0;
-	}
+
+	}else // proceso .vmi
+	    if(strstr(filename1, ".vmi") != NULL)
+        {
+            arch = fopen(filename1, "rb");
+
+            fread(tipoArch, sizeof(char), 5, arch);
+            fread(&version, sizeof(char), 1, arch);
+
+            leeDosBytes(&memorySize, arch);
+            mv->memoria = (char*)malloc(memorySize);
+
+            for(i=0; i<15; i++)
+                fread(&(mv->registros[i]),sizeof(char), 4, arch);
+
+            for(i=0; i<7; i++)
+                fread(&(mv->tablaSegmentos[i]), sizeof(char), 4, arch);
+
+            fread(mv->memoria, sizeof(char), memorySize, arch);
+       }else
+           mv->errorFlag = 4; //tipo de archivo invalido no soporta la MV
 }
 
-void cargaCodigo(TMV *mv, char *filename, int programSize)
+void cargaCodigo(TMV *mv, FILE *arch, int programSize)
 {
-	FILE *arch = fopen(filename, "rb");
-
-	// salta el header
-	fseek(arch, 18, SEEK_SET);
-
-	if (mv->registros[KS] != -1) {
-		fread((char *)((int) mv->memoria + mv->registros[KS] & 0xFFFF), sizeof(char), programSize, arch);
+	if (mv->registros[KS] != -1)
+    {
+		fread(mv->memoria + (mv->tablaSegmentos[0] & 0xFFFF), sizeof(char), programSize, arch);
 		fread(mv->memoria, sizeof(char), mv->tablaSegmentos[0] & 0xFFFF, arch);
 	} else
 		fread(mv->memoria, sizeof(char), programSize, arch);
-
-	for(int i=0;i<programSize;i++)
-    {
-        for(int k=7;k>=0;k--)
-            printf("%d",(mv->memoria[i]>>k)&1);
-        printf("\n");
-    }
-    fclose(arch);
 }
 
 char instruccionActual(TMV mv)
 {
-    return mv.memoria[mv.registros[5]] & 0xFF;
+    return mv.memoria[mv.registros[IP]] & 0xFF;
 }
 
 //verifica que el codigo de operacion exista
 int instruccionValida(char codOp)
 {
-    return (codOp>=0 && codOp <=0xC) || (codOp>=0x10 && codOp<=0x1A) || (codOp==0x1F);
+    return (codOp>=0 && codOp <=0xC) || (codOp>=0x10 && codOp<=0x1F);
 }
 
-//verifica que el operando de memoria o los jumps no se pasen de segmento
-int segmentoCheck(TMV mv,int oprnd,int tipo)
+int validDirection(TMV mv, int memoryOp)
 {
-    int posTabla, dir, tope, comienzo;
+    int dir = direccion(mv,memoryOp);
+    int registro = (memoryOp >> 16) & 0xF;
+    int posTablaSegmento = (mv.registros[registro] >> 16)  & 0xF;
+    int comienzo = (mv.tablaSegmentos[posTablaSegmento]>>16) & 0xFFFF;
+    int tope = comienzo + (mv.tablaSegmentos[posTablaSegmento]&0xFFFF);
+    return (dir>=comienzo) && (dir<tope);
+}
 
-    switch(tipo)
-    {
-        case 1: //verifica q el operando de memoria no se salga de segmento
-            dir = direccion(mv,oprnd);
-            tope = (((mv.tablaSegmentos[1]>>16) & 0xFFFF) + (mv.tablaSegmentos[1]&0xFFFF));
-            comienzo = (mv.tablaSegmentos[1]>>16) & 0xFFFF;
-            return  (dir >= comienzo) && (dir <= tope);
-        break;
+int validIP(TMV mv)
+{
+    int posCS = (mv.registros[KS]!=-1)?1:0;
+    return (mv.registros[IP]&0xFFFF) < (((mv.tablaSegmentos[posCS]>>16)&0xFFFF) + mv.tablaSegmentos[posCS]&0xFFFF);
 
-        case 2: //verifica que el jump no se salga de segmento
-            return oprnd <= (mv.tablaSegmentos[0]&0xFFFF);
-        break;
+}
 
-        case 3: //verifica que el IP no se salga de segmento
-            return (mv.registros[IP]&0xFFFF) < (mv.tablaSegmentos[0]&0xFFFF);
-   }
- return 0;
+int validJump(TMV mv, int salto)
+{
+    int posCS = (mv.registros[KS]!=-1)?1:0;
+    return salto < (mv.tablaSegmentos[posCS]&0xFFFF);
 }
 
 void readOperand(TMV *mv, int tipo, int *operador)
@@ -233,7 +237,7 @@ int direccion(TMV mv, int memoryOp)
 	char codReg = (memoryOp >> 16) & 0xFF;
     short int offsetReg = (mv.registros[codReg] & 0xFFFF);
 	short int offsetInst = (memoryOp & 0xFFFF);
-	int inicioSegmento = (mv.tablaSegmentos[(mv.registros[codReg] >> 16) & 0x1]>>16) & 0xFFFF;
+	int inicioSegmento = (mv.tablaSegmentos[(mv.registros[codReg] >> 16) & 0xF]>>16) & 0xFFFF;
 	return inicioSegmento + offsetReg + offsetInst;
 }
 

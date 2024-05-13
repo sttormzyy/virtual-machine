@@ -4,52 +4,59 @@
 #include "disassembler.h"
 
 
-void procesaInstruccion(TMV *mv, void (*operaciones[])());
+void procesaInstruccion(TMV *mv, void (*operaciones[])(), void (*systemCall[])(),int,char*);
 void reportStatus(int estado);
 
 int main(int argc, char *argv[]){
     TMV mv;
-    int segmentoSizes[6], valido,d;
+    char *imageFilename;
+    int segmentoSizes[6], valido,i, memorySize;
 
     void (*operaciones[])() = {MOV, ADD, SUB, SWAP, MUL, DIV, CMP, SHL, SHR, AND, OR, XOR,
-                                 RND, NULL, NULL, NULL, SYS, JMP, JZ, JP, JN, JNZ, JNP, JNN,
+                                 RND, NULL, NULL, NULL, NULL, JMP, JZ, JP, JN, JNZ, JNP, JNN,
                                  LDL, LDH, NOT, PUSH, POP, CALL, RET};
 
-    //verifica  q el archivo sea del tipo correcto y almacena el tamanio del programa en bytes
-    valido = readHeader(segmentoSizes,argv[1],&mv);
+    void (*systemCall[])() = {SYS1, SYS2, SYS3, SYS4, SYS7, SYSF};
 
 
-    if (valido)
+    //lee el header y en base a eso inicializa la MV // argv[1] nombre .vmx // argv[2] nombre .vmi // argv[3] tamaño memoria
+
+    i = checkParam( argc, argv, "m=");
+    mv.memorySize = (i!=0) ? atoi(argv[i]+2) : MEMORIA_SIZE;
+
+    i = checkParam( argc, argv, ".vmi");
+    imageFilename = (i!=0)? argv[i] : NULL;
+
+    inicializacion(segmentoSizes, argv[1], &mv);
+
+    //chequeo si pidieron disassembler
+    if (checkParam( argc, argv, "-d"))
+        disassembler(mv, segmentoSizes[CS]);
+
+    //procesa programa hasta encontrar un STOP o que ocurra un error (segmento invalido,div por 0,etc)
+    while (!finPrograma(mv))
     {
-        //inicializo registros CS,DS,IP y Tabla de Segmento
-        iniciaMV(&mv, segmentoSizes);
+        procesaInstruccion(&mv, operaciones, systemCall, argc, argv);
 
-        //cargo el codigo en la memoria principal
-        cargaCodigo(&mv, argv[1], segmentoSizes);
+        if(mv.modo ==  DEBUG)
+            pasoDebug(&mv, imageFilename);
 
-        if (checkParam(argc, argv, "-d"))
-        {
-            disassembler(mv, segmentoSizes[CS]);
-        }
-
-        //procesa programa hasta encontrar un STOP o que ocurra un error (segmento invalido,div por 0,etc)
-        while (!mv.errorFlag && ((instruccionActual(mv)&0xFF) != 0xFF))
-        {
-            procesaInstruccion(&mv, operaciones);
-            if (!mv.errorFlag)
-                mv.errorFlag = !(segmentoCheck(mv,CS,3)); //chequea q el ip apunte dentro de code segment
-        }
     }
 
-    reportStatus(mv. errorFlag);
-    scanf(" %d",&d);
+    reportStatus(mv.errorFlag);
+    scanf("%d",&i);
     return 0;
 }
 
-void procesaInstruccion(TMV *mv, void (*operaciones[])()){
-    int A, B, opA, opB, codOp,vA,vB;
-    char instruccion = instruccionActual(*mv);
+int finPrograma(TMV mv)
+{
+    return mv.errorFlag || instruccionActual(mv)==0xFF || !validIP(mv);
+}
 
+void procesaInstruccion(TMV *mv, void (*operaciones[])(), void (*systemCall[])(),int argc, char* argv){
+    int A, B, opA, opB, codOp, vA, vB, i;
+    char instruccion = instruccionActual(*mv);
+    char* aux;
     codOp = instruccion & 0x1F;
 
     if( instruccionValida(codOp))
@@ -58,7 +65,7 @@ void procesaInstruccion(TMV *mv, void (*operaciones[])()){
         opB = ((instruccion & 0xC0) >> 6) & 0x03;
         opA = (instruccion & 0x30) >> 4;
 
-        mv->registros[5]++;
+        mv->registros[IP]++;
 
         //obtengo operandos
         readOperand(mv, opB, &B);
@@ -66,18 +73,26 @@ void procesaInstruccion(TMV *mv, void (*operaciones[])()){
 
         //si el operando es de memoria chequeo q no se salga de segmento la direccion a donde tengo q buscar el dato, sino lo doy como valido
         //chequearlo antes de ir a la operacion me facilita no tener q estar chequeandolo adentro de cada operacion
-        vA = (opA == 0)?segmentoCheck(*mv,A,1):1;
-        vB = (opB == 0)?segmentoCheck(*mv,B,1):1;
+        vA = (opA == 0)? validDirection(*mv,A) : 1;
+        vB = (opB == 0)? validDirection(*mv,B) : 1;
 
-        if(vA && vB){
-
+        if(vA && vB)
+        {
             //segun el codigo de operacion, llamo la q corresponda
             if(codOp & 0x10)
             {
-                if(codOp>=0x11 && codOp<=0x17)
-                    jump(B, codOp, mv, operaciones); //jumps
+                if(codOp == 0x10)
+                    systemCall[B-1](mv);
                 else
-                    operaciones[codOp](B, opB, mv); //operaciones de 1 operando
+                {
+                    if(codOp>=0x11 && codOp<=0x17)
+                        jump(B, codOp, mv, operaciones); //jumps
+                    else
+                        if(codOp == 0x1D)
+                            operaciones[codOp](B, codOp, mv, operaciones);
+                        else
+                            operaciones[codOp](B, opB, mv); //operaciones de 1 operando
+                }
             }else
                 operaciones[codOp](A, opA, B, opB, mv); //operaciones de 2 operandos
 
@@ -105,6 +120,8 @@ void reportStatus(int estado)
         case 4: printf("INVALID ARCHIVE TYPE");
         break;
         case 5: printf("INVALID PROGRAM SIZE");
+        break;
+        default: printf("UNHANDLED ERROR");
         break;
    }
 }

@@ -5,7 +5,7 @@
 
 const char* fnNombres[] = {"MOV", "ADD", "SUB", "SWAP", "MUL", "DIV", "CMP", "SHL", "SHR", "AND", "OR", "XOR",
                            "RND", "NULL", "NULL", "NULL", "SYS %", "JMP", "JZ", "JP", "JN", "JNZ", "JNP", "JNN", "LDL", "LDH", "NOT",
-                           "NULL","NULL","NULL","STOP","STOP"};
+                           "PUSH","POP","CALL","RET","STOP"};
 
 const char* regNombres[] = {"CS","DS","ES","SS","KS","IP","SP","BP","CC","AC",
                           "EAX","AL","AH","AX","EBX","BL","BH","BX","ECX","CL","CH","CX","EDX","DL","DH","DX",
@@ -15,23 +15,29 @@ const char* cantCelda[] = {'l',' ','w','b'};
 
 void disassembler(TMV mv, int programSize)
 {
-    int ip = mv.registros[IP];
+    int ip = mv.registros[CS];
 
-    while (mv.registros[IP] < programSize && !mv.errorFlag)
+    mostrarConstantes(mv);
+
+    while (ip < programSize && !mv.errorFlag)
     {
-        pasoDis(&mv, instruccionActual(mv));
+        pasoDis(&mv, mv.memoria[ip]&0xFF,&ip);
     }
     printf("\n\n");
-    mv.registros[IP] = ip;
 }
 
-void pasoDis(TMV *mv, char instruccion) {
+void pasoDis(TMV *mv, char instruccion, int *ip) {
     int codOp = instruccion & 0x1F;
     int opB, opA, B, A, i;
 
     if (instruccionValida(codOp))
     {
-        printf("[%04X] ", mv->registros[IP]);
+        if(*ip == mv->registros[IP]&0xFFFF)
+            putchar('>');
+        else
+            putchar(' ');
+
+        printf("[%04X] ", *ip);
 
     //determino tipos de operandos
         opB = ((instruccion & 0xC0) >> 6) & 0x03;
@@ -41,11 +47,11 @@ void pasoDis(TMV *mv, char instruccion) {
     //muestro en hexa la instruccion
         printf("%02X ", instruccion & 0xFF);
 
-       (mv->registros[IP])++;
+      (*ip)++;
 
     //muestro operandos en hexa y obtengo su valor
-       OperandDis(mv, opB, &B);
-       OperandDis(mv, opA, &A);
+       OperandDis(mv, opB, &B, ip);
+       OperandDis(mv, opA, &A, ip);
        fillExtraDis(opB+opA);
 
        printf("| %s ", fnNombres[codOp]);
@@ -72,12 +78,12 @@ int checkParam(int argc, char *argv[], char strCmp[])
 {
 	int i = 0;
 
-	while( argc > i && strcmp(argv[i], strCmp)) {
+	while( argc > i && !strstr(argv[i], strCmp)) {
 		i++;
 	}
 
 	if (i < argc)
-		return 1;
+		return i;
 	return 0;
 }
 
@@ -128,19 +134,19 @@ void mostrarOp(int tipo, int valor)
     }
 }
 
-void OperandDis(TMV *mv, int tipo, int *operador)
+void OperandDis(TMV *mv, int tipo, int *operador, int *ip)
 {
     char operadorSize = (~tipo) & 0x3;
-    int i, ip = mv->registros[IP];
+    int i;
     *operador = 0;
 
   //muestro en hexa la info de los operandos y los guardo
     for (i = 0; i < operadorSize; ++i)
      {
-        printf("%02X ", (mv->memoria[ip] & 0xFF));
-       *operador = (*operador << 8) | (mv->memoria[ip++] & 0xFF);
+        printf("%02X ", (mv->memoria[*ip] & 0xFF));
+       *operador = (*operador << 8) | (mv->memoria[(*ip)++] & 0xFF);
      }
-    mv->registros[IP] = ip;
+
 
     if(tipo == 1)
     {
@@ -154,5 +160,44 @@ void fillExtraDis(int extraSpace)
         printf("   ");
 }
 
+
+void mostrarConstantes(TMV mv)
+{
+    int i=0,k=0,offsetAlprim=0;
+    if(mv.registros[KS]!=-1)
+    {
+      while(i < mv.tablaSegmentos[0])
+      {
+          printf(" [%04X] ",i);
+          k=0;
+          while(mv.memoria[i]!='\0')
+          {
+              if(k<6)
+              {
+               printf("%02X ",mv.memoria[i]);
+               k++;
+              }
+
+              i++;
+          }
+
+          if(k==6 && mv.memoria[i]!='\0')
+             printf(".. ");
+          else
+             printf("%02X ",mv.memoria[i]);
+
+          while(k<6)
+          {
+              printf("   ");
+              k++;
+          }
+
+          i++;
+          printf("| ");
+          printf("\"%s\"\n",mv.memoria+offsetAlprim);
+          offsetAlprim = i;
+      }
+    }
+}
 
 

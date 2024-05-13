@@ -1,6 +1,7 @@
 #include "operaciones.h"
 #include <stdlib.h>
 #include <time.h>
+#include <string.h>
 
 //modifico los bits N,Z de acuerdo al resultado de la ultima operacion logico/matematica
 void NZ(TMV *mv, int resultado)
@@ -14,7 +15,7 @@ void NZ(TMV *mv, int resultado)
 
     if(!resultado)
     {
-    mv->registros[CC] |= 0x40000000;
+        mv->registros[CC] |= 0x40000000;
     }
 
 }
@@ -28,7 +29,9 @@ void MOV(int A, int opA, int B, int opB, TMV *mv)
     {
         //MOV a memoria
         case 0:
+
             dir = direccion(*mv, A);
+             printf(" MOV A MEMORIA dir=%d  ",dir);
             cantCelda = (~((A>>22)&0x3))&0x3;
             for (i = cantCelda; i >=0; i--)
             {
@@ -38,6 +41,7 @@ void MOV(int A, int opA, int B, int opB, TMV *mv)
 
         //MOV a registro
         case 2:
+            printf(" MOV A REGISTRO  reg=%X ",A&0xF);
             secReg = (A >> 4) & 0x3;
             registerMask(secReg, &corr, &mask);
             codReg = A & 0xF;
@@ -145,7 +149,8 @@ void jump(int salto, int codOp, TMV *mv, void (*operaciones[])())
 {
 //verifico que el salto se mantenga dentro del code segment
 //para no estar escribiendo en cada jump esta verificacion la hago aca y llamo al jump que corresponda
-    if(segmentoCheck(*mv,salto,2))
+
+    if(validJump(*mv,salto))
         operaciones[codOp](salto,mv);
     else
         mv->errorFlag=1; //segmento invalido
@@ -237,14 +242,16 @@ void RND(int A, int opA, int B, int opB, TMV *mv)
 
 // Manejo de pila
 
-void PUSH(int opB, int B, TMV *mv)
+void PUSH(int B, int opB, TMV *mv)
 {
     int A = 0x060000; // el push hace un MOV a la posicion de memoria q apunta SP, entonces pongo en A un tipo de operando de memoria
     // 0 indica q escriba 4 bytes, 6 q use el registro SP para calcular direccion, 0000 q no tiene offset xq escribe donde apunta SP
-    int valB = operandValue(mv, B, opB); // este va depender de q se este pusheando, si memoria,registro o inmediato
+    int valB = operandValue(*mv, B, opB); // este va depender de q se este pusheando, si memoria,registro o inmediato
+
+    printf("PUSH %X %X ",opB,B);
 
     mv->registros[SP] -= 4;
-    if(mv->registros[SP] < mv->registros[SS])
+    if(mv->registros[SP] > mv->registros[SS])
     {
        MOV(A,0,B,opB,mv);
     }else
@@ -254,11 +261,14 @@ void PUSH(int opB, int B, TMV *mv)
 }
 
 
-void POP(int opA, int A, TMV *mv)
+void POP(int A, int opA, TMV *mv)
 {
     int B = 0x060000; // el pop hace un MOV de lo q tiene donde apunta SP hacia registro o memoria
-    if(mv->registros[SP] < //tamaño del stack segment)
+
+    printf(" POP %X",mv->registros[5]);
+    if((mv->registros[SP]&0xFFFF) < (mv->tablaSegmentos[(mv->registros[SS]>>16)&0xF]&0xFFFF))
     {
+
         MOV(A, opA, B, 0, mv);
         mv->registros[SP] +=4;
     }
@@ -271,64 +281,26 @@ void POP(int opA, int A, TMV *mv)
 // este no me gusta despues te digo xq cuando hagamos ds
 void CALL(int salto, int codOp, TMV *mv, void (*operaciones[])())
 {
-    PUSH(mv->registros[IP]);
-    jump(salto, codOp, mv, operaciones);
+    PUSH(mv->registros[IP], 1, mv);
+    jump(salto, 0x11, mv, operaciones);
 }
 
 
-void RET(TMV *mv)
+void RET(int B, int opB, TMV *mv)
 {
+    printf("RET");
     //preparo para hacer un POP IP q es hacer un MOV IP,[SP]
   int opA = 2; // tipo de operando registro
-  int A = 0x06; // y acomodo el registro al q quiero mover lo q saque con POP como SP
-  POP(opA,A,*mv);
+  int A = 0x05; // y acomodo el registro al q quiero mover lo q saque con POP como SP
+  POP(A, opA, mv);
+  printf("%X",mv->registros[IP]);
 }
 
 
-// Llamadas a sistema
-
-/*
-void SYS(int A, int opA, TMV *mv)
-{
-    int dir = ((mv->tablaSegmentos[(mv->registros[EDX]>>16)&0x1]>>16)&0xFFFF) + (mv->registros[EDX]&0xFFFF);
-    int cant = mv->registros[ECX]&0xFF;
-    int tam = (mv->registros[ECX]>>8)&0xFF;
-    int modo = mv->registros[EAX]&0xF;
-    int x,i,k;
-
-    switch(A)
-    {
-        //read
-        case 1:
-            for(i=0; i<cant; i++)
-            {
-                printf("[%04X]: ",dir);
-                input(&x,modo);
-                for(k=tam-1; k>=0; k--)
-                {
-                    mv->memoria[dir++] = (x&(0xFF<<8*k))>>(8*k);
-                }
-            }
-        break;
-        //write
-        case 2:
-            for(i=0; i<cant; i++)
-            {
-                x=0;
-                printf("[%04X]: ",dir);
-                for(k=tam-1; k>=0; k--)
-                {
-                    x |= (mv->memoria[dir++]<<(8*k))&(0xFF<<8*k);
-                }
-                output(x,modo,tam-1);
-           }
-        break;
-  }
-}
-*/
+// LLAMADAS A SISTEMA
 
 // el usuario ingresa por consola
-void SYS1(int A, int opA, TMV *mv)
+void SYS1(TMV *mv)
 {
     int dir = ((mv->tablaSegmentos[(mv->registros[EDX]>>16)&0xF]>>16)&0xFFFF) + (mv->registros[EDX]&0xFFFF);
     int cant = mv->registros[ECX]&0xFF;
@@ -371,7 +343,7 @@ void input(int *x,int modo)
 
 
 // muestro por consola
-void SYS2(int A, int opA, TMV *mv)
+void SYS2(TMV *mv)
 {
     int dir = ((mv->tablaSegmentos[(mv->registros[EDX]>>16)&0xF]>>16)&0xFFFF) + (mv->registros[EDX]&0xFFFF);
     int cant = mv->registros[ECX]&0xFF;
@@ -413,7 +385,7 @@ void output(int x, int modo,int tam)
 
 
 // el usuario ingresa un string
-void SYS3(int A, int opA, TMV *mv)
+void SYS3(TMV *mv)
 {
     char buffer[1000];
     int dir = ((mv->tablaSegmentos[(mv->registros[EDX]>>16)&0xF]>>16)&0xFFFF) + (mv->registros[EDX]&0xFFFF);
@@ -433,7 +405,7 @@ void SYS3(int A, int opA, TMV *mv)
 
 
 // muestro por consola un string
-void SYS4(int A, int opA, TMV *mv)
+void SYS4(TMV *mv)
 {
     int dir = ((mv->tablaSegmentos[(mv->registros[EDX]>>16)&0xF]>>16)&0xFFFF) + (mv->registros[EDX]&0xFFFF);
 
@@ -447,4 +419,58 @@ void SYS4(int A, int opA, TMV *mv)
 void SYS7()
 {
     system("cls");
+}
+
+
+
+// DEBUGGING
+
+void SYSF(TMV *mv, char* filename, void (*operaciones[])(), void (*systemCall[])())
+{
+  mv->modo = DEBUG;
+}
+
+void pasoDebug(TMV *mv, char* filename)
+{
+    char input;
+
+    if(filename != NULL && strlen(filename)>4)
+        generaImagen(filename,mv);
+
+    do{
+        input = getchar();
+    }while(input != 'g' && input!='q' && input !=13);
+
+    if(input == 'g')
+        mv->modo = !DEBUG;
+
+    if(input == 'q')
+        mv->registros[IP] = 0xEFFFFFFF;
+}
+
+void generaImagen(char* filename, TMV mv)
+{
+    FILE* arch;
+    char id[] = "VMI24";
+    char version = '1';
+    int i;
+
+    if(filename != NULL)
+        arch = fopen(filename,"b");
+    else
+        arch = fopen("imagen.vmi","rb");
+
+    fwrite(id,sizeof(char)*5,1,arch);
+    fwrite(version,sizeof(char),1,arch);
+    fwrite(mv.memorySize,sizeof(char)*2,1,arch);
+
+    for(i=0; i<16; i++)
+        fwrite(mv.registros[i],sizeof(int),1,arch);
+
+    for(i=0; i<7; i++)
+        fwrite(mv.tablaSegmentos[i],sizeof(int),1,arch);
+
+    fwrite(mv.memoria,sizeof(char)*mv.memorySize,1,arch);
+
+    fclose(arch);
 }

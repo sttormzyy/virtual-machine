@@ -1,4 +1,3 @@
-
 #define CS  0
 #define DS  1
 #define ES  2
@@ -15,6 +14,4 @@
 #define EDX  13
 #define EEX  14
 #define EFX  15
-
-
-
+#define DEBUG 777

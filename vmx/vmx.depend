@@ -32,3 +32,38 @@
 	<stdlib.h>
 	<time.h>
 
+1715575361 source:e:\repo por las dudas de mv\virtual-machine\vmx\disassembler.c
+	<string.h>
+	<stdio.h>
+	"operaciones.h"
+
+1715567554 e:\repo por las dudas de mv\virtual-machine\vmx\operaciones.h
+	"mv.h"
+
+1715568533 e:\repo por las dudas de mv\virtual-machine\vmx\mv.h
+	"constantes.h"
+	<stdio.h>
+
+1715567448 e:\repo por las dudas de mv\virtual-machine\vmx\constantes.h
+
+1715570355 source:e:\repo por las dudas de mv\virtual-machine\vmx\main.c
+	<stdlib.h>
+	<string.h>
+	"operaciones.h"
+	"disassembler.h"
+
+1715215501 e:\repo por las dudas de mv\virtual-machine\vmx\disassembler.h
+
+1715573564 source:e:\repo por las dudas de mv\virtual-machine\vmx\mv.c
+	<string.h>
+	<stdlib.h>
+	<stdio.h>
+	<math.h>
+	"mv.h"
+
+1715570585 source:e:\repo por las dudas de mv\virtual-machine\vmx\operaciones.c
+	"operaciones.h"
+	<stdlib.h>
+	<time.h>
+	<string.h>
+
