@@ -17,7 +17,7 @@ void disassembler(TMV mv, int programSize)
 {
     int ip = mv.registros[CS];
 
-    mostrarConstantes(mv);
+    //mostrarConstantes(mv);
 
     while (ip < programSize && !mv.errorFlag)
     {

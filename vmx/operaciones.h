@@ -54,7 +54,7 @@ void PUSH(int opB, int B, TMV *mv);
 
 void POP(int opA, int A, TMV *mv);
 
-void CALL(int salto, int codOp, TMV *mv, void (*operaciones[])());
+void CALL(int salto, int codOp, TMV *mv);
 
 void RET(int A, int opB, TMV *mv);
 
@@ -66,9 +66,9 @@ void SYS3(TMV *mv);
 
 void SYS4(TMV *mv);
 
-void SYS7();
+void SYS7(TMV *mv);
 
-void SYSF(TMV *mv, char*, void (*operaciones[])(), void (*systemCall[])());
+void SYSF(TMV *mv);
 
 void input(int *x,int modo);
 

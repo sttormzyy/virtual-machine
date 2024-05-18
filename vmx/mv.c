@@ -4,27 +4,6 @@
 #include <math.h>
 #include "mv.h"
 
-void registerMask(int secReg, int *corr, int *mask)
-{
-    *mask = 0xFFFFFFFF;
-	*corr = 0;
-	if (secReg)
-    {
-		switch (secReg)
-		{
-		case 1:
-			*mask = 0x000000FF;
-			break;
-		case 2:
-			*mask = 0x0000FF00;
-			*corr = 1;
-			break;
-		case 3:
-			*mask = 0x0000FFFF;
-			break;
-		}
-	}
-}
 
 void iniciaMV(TMV *mv, int segmentoSizes[])
 {
@@ -32,7 +11,8 @@ void iniciaMV(TMV *mv, int segmentoSizes[])
 	mv->memoria = (char *) malloc(mv->memorySize);
 
 	// carga los registros CS, DS, ES, SS, KS con los valores del header
-	if (segmentoSizes[KS]) {
+	if (segmentoSizes[KS])
+    {
 		mv->registros[KS] = 0;
 		mv->tablaSegmentos[posicionTablaSegmento] = segmentoSizes[KS];
 		memoriaSizeControl += segmentoSizes[KS];
@@ -55,7 +35,8 @@ void iniciaMV(TMV *mv, int segmentoSizes[])
 	//inicializo IP con el offset correspondiente
 	mv->registros[IP] = (mv->registros[CS] & 0xFFFF0000) | segmentoSizes[IP];
     mv->registros[SP] = mv->registros[SS] | segmentoSizes[SS];
-	mv->errorFlag=0;
+	mv->errorFlag = 0;
+	mv->modo = !DEBUG;
 }
 
 void leeDosBytes(int *variableRetorno, FILE *arch)
@@ -70,7 +51,7 @@ void inicializacion( int segmentoSizes[], char *filename1, TMV *mv)
 {
 	FILE *arch;
 	char tipoArch[6], version;
-	int d, i, memoriaSizeControl = 0, memorySize;
+	int d, i, memoriaSizeControl = 0;
 
 
 	if(strstr(filename1,".vmx") != NULL) // proceso .vmx
@@ -98,8 +79,8 @@ void inicializacion( int segmentoSizes[], char *filename1, TMV *mv)
                 break;
         }
 
-        // valido tamanio del programa
-        if (segmentoSizes[CS]!=0 && memoriaSizeControl<=MEMORIA_SIZE)
+        // valido tamanio del proceso
+        if (memoriaSizeControl<=MEMORIA_SIZE)
         {
             iniciaMV(mv, segmentoSizes);
             cargaCodigo(mv, arch, segmentoSizes[CS]);
@@ -114,16 +95,12 @@ void inicializacion( int segmentoSizes[], char *filename1, TMV *mv)
             fread(tipoArch, sizeof(char), 5, arch);
             fread(&version, sizeof(char), 1, arch);
 
-            leeDosBytes(&memorySize, arch);
-            mv->memoria = (char*)malloc(memorySize);
+            fread(&(mv->memorySize), sizeof(short int), 1, arch);
+            mv->memoria = (char*)malloc(mv->memorySize);
 
-            for(i=0; i<15; i++)
-                fread(&(mv->registros[i]),sizeof(char), 4, arch);
-
-            for(i=0; i<7; i++)
-                fread(&(mv->tablaSegmentos[i]), sizeof(char), 4, arch);
-
-            fread(mv->memoria, sizeof(char), memorySize, arch);
+            fread(mv->registros, sizeof(int), 16, arch);
+            fread(mv->tablaSegmentos, sizeof(int), 8, arch);
+            fread(mv->memoria, sizeof(char), mv->memorySize, arch);
        }else
            mv->errorFlag = 4; //tipo de archivo invalido no soporta la MV
 }
@@ -140,7 +117,8 @@ void cargaCodigo(TMV *mv, FILE *arch, int programSize)
 
 char instruccionActual(TMV mv)
 {
-    return mv.memoria[mv.registros[IP]] & 0xFF;
+    int posTabla = (mv.registros[CS]>>16)&0xF;
+    return mv.memoria[((mv.tablaSegmentos[posTabla]>>16)&0xFFFF)+(mv.registros[IP]&0xFFFF)] & 0xFF;
 }
 
 //verifica que el codigo de operacion exista
@@ -162,7 +140,7 @@ int validDirection(TMV mv, int memoryOp)
 int validIP(TMV mv)
 {
     int posCS = (mv.registros[KS]!=-1)?1:0;
-    return (mv.registros[IP]&0xFFFF) < (((mv.tablaSegmentos[posCS]>>16)&0xFFFF) + mv.tablaSegmentos[posCS]&0xFFFF);
+    return (mv.registros[IP]&0xFFFF) < (mv.tablaSegmentos[posCS]&0xFFFF);
 
 }
 
@@ -241,4 +219,24 @@ int direccion(TMV mv, int memoryOp)
 	return inicioSegmento + offsetReg + offsetInst;
 }
 
-
+void registerMask(int secReg, int *corr, int *mask)
+{
+    *mask = 0xFFFFFFFF;
+	*corr = 0;
+	if (secReg)
+    {
+		switch (secReg)
+		{
+		case 1:
+			*mask = 0x000000FF;
+			break;
+		case 2:
+			*mask = 0x0000FF00;
+			*corr = 1;
+			break;
+		case 3:
+			*mask = 0x0000FFFF;
+			break;
+		}
+	}
+}

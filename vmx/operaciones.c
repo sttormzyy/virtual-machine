@@ -29,9 +29,7 @@ void MOV(int A, int opA, int B, int opB, TMV *mv)
     {
         //MOV a memoria
         case 0:
-
             dir = direccion(*mv, A);
-             printf(" MOV A MEMORIA dir=%d  ",dir);
             cantCelda = (~((A>>22)&0x3))&0x3;
             for (i = cantCelda; i >=0; i--)
             {
@@ -41,7 +39,6 @@ void MOV(int A, int opA, int B, int opB, TMV *mv)
 
         //MOV a registro
         case 2:
-            printf(" MOV A REGISTRO  reg=%X ",A&0xF);
             secReg = (A >> 4) & 0x3;
             registerMask(secReg, &corr, &mask);
             codReg = A & 0xF;
@@ -55,6 +52,7 @@ void ADD(int A, int opA, int B, int opB, TMV *mv)
 {
     int valA = operandValue(*mv, A, opA), valB = operandValue(*mv, B, opB);
 
+    printf("ADD %d+%d\n",valA,valB);
     MOV(A, opA, valA+valB, 1, mv);
     NZ(mv,valA+valB);
 }
@@ -78,7 +76,7 @@ void SWAP(int A, int opA, int B, int opB, TMV *mv)
 void MUL(int A, int opA, int B, int opB, TMV *mv)
 {
     int valA = operandValue(*mv, A, opA), valB = operandValue(*mv, B, opB);
-
+     printf("MUL %d+%d\n",valA,valB);
     MOV(A, opA, valA*valB, 1, mv);
     NZ(mv,valA*valB);
 }
@@ -174,7 +172,6 @@ void JP(int salto, TMV *mv)
     if((!(mv->registros[CC]&0x80000000)) && (!(mv->registros[CC]&0x40000000)))
     {
         mv->registros[IP] = mv->registros[CS]+salto;
-
     }
 };
 
@@ -184,6 +181,7 @@ void JN(int salto, TMV *mv)
     {
         mv->registros[IP] = mv->registros[CS]+salto;
     }
+
 };
 
 void JNZ(int salto, TMV *mv)
@@ -191,8 +189,8 @@ void JNZ(int salto, TMV *mv)
     if(!(mv->registros[CC]&0x40000000))
     {
         mv->registros[CC] = mv->registros[CS]+salto;
-
     }
+
 };
 
 void JNP(int salto, TMV *mv)
@@ -201,6 +199,7 @@ void JNP(int salto, TMV *mv)
     {
         mv->registros[IP] = mv->registros[CS]+salto;
     }
+
 };
 
 void JNN(int salto, TMV *mv)
@@ -209,6 +208,7 @@ void JNN(int salto, TMV *mv)
     {
         mv->registros[IP] = mv->registros[CS]+salto;
     }
+
 };
 
 void LDL(int A, int opA, TMV *mv)
@@ -248,8 +248,7 @@ void PUSH(int B, int opB, TMV *mv)
     // 0 indica q escriba 4 bytes, 6 q use el registro SP para calcular direccion, 0000 q no tiene offset xq escribe donde apunta SP
     int valB = operandValue(*mv, B, opB); // este va depender de q se este pusheando, si memoria,registro o inmediato
 
-    printf("PUSH %X %X ",opB,B);
-
+    if(opB==2 && ((B&0xF)==11))printf(" PUSH %d\n",valB);
     mv->registros[SP] -= 4;
     if(mv->registros[SP] > mv->registros[SS])
     {
@@ -265,10 +264,9 @@ void POP(int A, int opA, TMV *mv)
 {
     int B = 0x060000; // el pop hace un MOV de lo q tiene donde apunta SP hacia registro o memoria
 
-    printf(" POP %X",mv->registros[5]);
+    printf(" POP \n");
     if((mv->registros[SP]&0xFFFF) < (mv->tablaSegmentos[(mv->registros[SS]>>16)&0xF]&0xFFFF))
     {
-
         MOV(A, opA, B, 0, mv);
         mv->registros[SP] +=4;
     }
@@ -279,21 +277,26 @@ void POP(int A, int opA, TMV *mv)
 }
 
 // este no me gusta despues te digo xq cuando hagamos ds
-void CALL(int salto, int codOp, TMV *mv, void (*operaciones[])())
+void CALL(int salto, int codOp, TMV *mv)
 {
+    printf(" CALL \n");
     PUSH(mv->registros[IP], 1, mv);
-    jump(salto, 0x11, mv, operaciones);
+
+    if(validJump(*mv,salto))
+      JMP(salto,mv);
+    else
+      mv->errorFlag=1; //segmento invalido
 }
 
 
 void RET(int B, int opB, TMV *mv)
 {
-    printf("RET");
+  printf(" RET \n");
     //preparo para hacer un POP IP q es hacer un MOV IP,[SP]
   int opA = 2; // tipo de operando registro
   int A = 0x05; // y acomodo el registro al q quiero mover lo q saque con POP como SP
   POP(A, opA, mv);
-  printf("%X",mv->registros[IP]);
+
 }
 
 
@@ -387,20 +390,17 @@ void output(int x, int modo,int tam)
 // el usuario ingresa un string
 void SYS3(TMV *mv)
 {
-    char buffer[1000];
+    char buffer[1000] = {0};
     int dir = ((mv->tablaSegmentos[(mv->registros[EDX]>>16)&0xF]>>16)&0xFFFF) + (mv->registros[EDX]&0xFFFF);
     int cantCaracteres = mv->registros[ECX] & 0xFF;
 
     printf("[%04X]: ",dir);
-    scanf("%s",buffer);
+    fgets(buffer, sizeof(buffer), stdin);
 
     if(cantCaracteres == -1)
         strcpy(mv->memoria+dir,buffer);
     else
-    {
         strncpy(mv->memoria+dir,buffer,cantCaracteres);
-       *(mv->memoria+dir+cantCaracteres) = '\0';
-    }
 }
 
 
@@ -409,14 +409,12 @@ void SYS4(TMV *mv)
 {
     int dir = ((mv->tablaSegmentos[(mv->registros[EDX]>>16)&0xF]>>16)&0xFFFF) + (mv->registros[EDX]&0xFFFF);
 
-    for (int i = dir; mv->memoria[i] != '\0'; i++)
-    {
-        printf("%c", mv->memoria[i]);
-    }
+    printf("[%04X]: ",dir);
+    printf("%s",mv->memoria+dir);
 }
 
 // limpio la consola (no se si es asi en C)
-void SYS7()
+void SYS7(TMV *mv)
 {
     system("cls");
 }
@@ -425,52 +423,45 @@ void SYS7()
 
 // DEBUGGING
 
-void SYSF(TMV *mv, char* filename, void (*operaciones[])(), void (*systemCall[])())
+void SYSF(TMV *mv)
 {
-  mv->modo = DEBUG;
+    printf("MODO DEBUG \n");
+    mv->modo = DEBUG;
 }
 
 void pasoDebug(TMV *mv, char* filename)
 {
     char input;
 
-    if(filename != NULL && strlen(filename)>4)
-        generaImagen(filename,mv);
+    generaImagen(filename,mv);
 
     do{
         input = getchar();
-    }while(input != 'g' && input!='q' && input !=13);
+    }while(input != 'g' && input!='q' && input !='\n');
 
     if(input == 'g')
         mv->modo = !DEBUG;
 
     if(input == 'q')
-        mv->registros[IP] = 0xEFFFFFFF;
+        mv->registros[IP] |= 0x8000;
 }
 
 void generaImagen(char* filename, TMV mv)
 {
+    printf("IMAGEN\n");
     FILE* arch;
     char id[] = "VMI24";
     char version = '1';
     int i;
 
-    if(filename != NULL)
-        arch = fopen(filename,"b");
-    else
-        arch = fopen("imagen.vmi","rb");
+    arch = fopen(filename,"wb");
 
-    fwrite(id,sizeof(char)*5,1,arch);
-    fwrite(version,sizeof(char),1,arch);
-    fwrite(mv.memorySize,sizeof(char)*2,1,arch);
-
-    for(i=0; i<16; i++)
-        fwrite(mv.registros[i],sizeof(int),1,arch);
-
-    for(i=0; i<7; i++)
-        fwrite(mv.tablaSegmentos[i],sizeof(int),1,arch);
-
-    fwrite(mv.memoria,sizeof(char)*mv.memorySize,1,arch);
+    fwrite(id, sizeof(char), 5, arch);
+    fwrite(&version, sizeof(char), 1, arch);
+    fwrite(&mv.memorySize, sizeof(char), 2, arch);
+    fwrite(mv.registros, sizeof(char), 64, arch);
+    fwrite(mv.tablaSegmentos, sizeof(char), 32, arch);
+    fwrite(mv.memoria, sizeof(char), mv.memorySize, arch);
 
     fclose(arch);
 }
