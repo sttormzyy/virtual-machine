@@ -20,7 +20,7 @@ void iniciaMV(TMV *mv, int segmentoSizes[])
 	} else
 		mv->registros[KS] = -1;
 
-	for (i = 0; i < 5; ++i)
+	for (i = 0; i < 4; ++i)
 	{
 		if (segmentoSizes[i] != 0)
 		{
@@ -33,7 +33,7 @@ void iniciaMV(TMV *mv, int segmentoSizes[])
 	}
 
 	//inicializo IP con el offset correspondiente
-	mv->registros[IP] = (mv->registros[CS] & 0xFFFF0000) | segmentoSizes[IP];
+	mv->registros[IP] = (mv->registros[CS] & 0xFFFF0000) | (segmentoSizes[IP] & 0xFFFF);
     mv->registros[SP] = mv->registros[SS] | segmentoSizes[SS];
 	mv->errorFlag = 0;
 	mv->modo = !DEBUG;
@@ -153,16 +153,15 @@ int validJump(TMV mv, int salto)
 void readOperand(TMV *mv, int tipo, int *operador)
 {
 	char operadorSize = (~tipo) & 0x3;
-	int i, ip = mv->registros[IP];
+	int i, ip = (((mv->tablaSegmentos[mv->registros[CS] >> 16] >> 16) & 0xFFFF) + mv->registros[IP] & 0xFFFF);
 	*operador = 0;
 
 	// obtengo la informacion que esta en memoria sobre el operador
 	for (i = 0; i < operadorSize; ++i)
     {
-		*operador = (*operador << 8) | (mv->memoria[ip++] & 0xFF);
+		*operador = ((*operador) << 8) | (mv->memoria[ip++] & 0xFF);
 	}
-	mv->registros[IP] = ip;
-
+	mv->registros[IP] += operadorSize;
     //expande signo si es inmediato
 	if(tipo == 1)
     {

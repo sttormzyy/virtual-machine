@@ -74,3 +74,6 @@ void input(int *x,int modo);
 
 void output(int x, int modo, int tam);
 
+void pasoDebug(TMV *mv, char* filename);
+
+

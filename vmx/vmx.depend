@@ -67,3 +67,39 @@
 	<time.h>
 	<string.h>
 
+1716059373 source:c:\users\vanci\desktop\code\virtual-machine\vmx\mv.c
+	<string.h>
+	<stdlib.h>
+	<stdio.h>
+	<math.h>
+	"mv.h"
+
+1716047497 c:\users\vanci\desktop\code\virtual-machine\vmx\mv.h
+	"constantes.h"
+	<stdio.h>
+
+1716047497 c:\users\vanci\desktop\code\virtual-machine\vmx\constantes.h
+
+1716063492 source:c:\users\vanci\desktop\code\virtual-machine\vmx\operaciones.c
+	"operaciones.h"
+	<stdlib.h>
+	<time.h>
+	<string.h>
+
+1716050462 c:\users\vanci\desktop\code\virtual-machine\vmx\operaciones.h
+	"mv.h"
+
+1716061267 source:c:\users\vanci\desktop\code\virtual-machine\vmx\disassembler.c
+	<string.h>
+	<ctype.h>
+	<stdio.h>
+	"operaciones.h"
+
+1716062408 source:c:\users\vanci\desktop\code\virtual-machine\vmx\main.c
+	<stdlib.h>
+	<string.h>
+	"operaciones.h"
+	"disassembler.h"
+
+1716047497 c:\users\vanci\desktop\code\virtual-machine\vmx\disassembler.h
+

@@ -1,10 +1,11 @@
 #include <string.h>
+#include <ctype.h>
 #include <stdio.h>
 #include "operaciones.h"
 
 
 const char* fnNombres[] = {"MOV", "ADD", "SUB", "SWAP", "MUL", "DIV", "CMP", "SHL", "SHR", "AND", "OR", "XOR",
-                           "RND", "NULL", "NULL", "NULL", "SYS %", "JMP", "JZ", "JP", "JN", "JNZ", "JNP", "JNN", "LDL", "LDH", "NOT",
+                           "RND", "NULL", "NULL", "NULL", "SYS", "JMP", "JZ", "JP", "JN", "JNZ", "JNP", "JNN", "LDL", "LDH", "NOT",
                            "PUSH","POP","CALL","RET","STOP"};
 
 const char* regNombres[] = {"CS","DS","ES","SS","KS","IP","SP","BP","CC","AC",
@@ -15,13 +16,13 @@ const char* cantCelda[] = {'l',' ','w','b'};
 
 void disassembler(TMV mv, int programSize)
 {
-    int ip = mv.registros[CS];
+    int i,ip = (mv.tablaSegmentos[mv.registros[CS] >> 16] >> 16) & 0xFFFF;
 
-    //mostrarConstantes(mv);
-
+    mostrarConstantes(mv);
+    
     while (ip < programSize && !mv.errorFlag)
     {
-        pasoDis(&mv, mv.memoria[ip]&0xFF,&ip);
+        pasoDis(&mv, mv.memoria[ip]&0xFF, &ip);
     }
     printf("\n\n");
 }
@@ -163,7 +164,7 @@ void fillExtraDis(int extraSpace)
 
 void mostrarConstantes(TMV mv)
 {
-    int i=0,k=0,offsetAlprim=0;
+    int i = 0, j = 0, k = 0, offsetAlprim=0;
     if(mv.registros[KS]!=-1)
     {
       while(i < mv.tablaSegmentos[0])
@@ -172,29 +173,31 @@ void mostrarConstantes(TMV mv)
           k=0;
           while(mv.memoria[i]!='\0')
           {
-              if(k<6)
-              {
-               printf("%02X ",mv.memoria[i]);
-               k++;
-              }
-
-              i++;
+            if (k < 6)
+                printf("%02X ",mv.memoria[i]);
+            else if (k == 6)
+                printf(".. ");
+            k++;
+            i++;
           }
-
-          if(k==6 && mv.memoria[i]!='\0')
-             printf(".. ");
-          else
-             printf("%02X ",mv.memoria[i]);
-
-          while(k<6)
-          {
-              printf("   ");
-              k++;
+          if (k <= 6 && mv.memoria[i] == '\0') {
+            printf("00 ");
+            k++;
           }
-
+          while (k <= 6) {
+            printf("   ");
+            k++;
+          }
           i++;
           printf("| ");
-          printf("\"%s\"\n",mv.memoria+offsetAlprim);
+          j = offsetAlprim;
+          putchar('"');
+          while (*(mv.memoria + j) != '\0') {
+            printf("%c", isprint(*(mv.memoria + j))?*(mv.memoria + j):'.');
+            j++;
+          }
+          putchar('"');
+          putchar('\n');
           offsetAlprim = i;
       }
     }

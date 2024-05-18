@@ -52,7 +52,6 @@ void ADD(int A, int opA, int B, int opB, TMV *mv)
 {
     int valA = operandValue(*mv, A, opA), valB = operandValue(*mv, B, opB);
 
-    printf("ADD %d+%d\n",valA,valB);
     MOV(A, opA, valA+valB, 1, mv);
     NZ(mv,valA+valB);
 }
@@ -76,7 +75,6 @@ void SWAP(int A, int opA, int B, int opB, TMV *mv)
 void MUL(int A, int opA, int B, int opB, TMV *mv)
 {
     int valA = operandValue(*mv, A, opA), valB = operandValue(*mv, B, opB);
-     printf("MUL %d+%d\n",valA,valB);
     MOV(A, opA, valA*valB, 1, mv);
     NZ(mv,valA*valB);
 }
@@ -279,7 +277,6 @@ void POP(int A, int opA, TMV *mv)
 // este no me gusta despues te digo xq cuando hagamos ds
 void CALL(int salto, int codOp, TMV *mv)
 {
-    printf(" CALL \n");
     PUSH(mv->registros[IP], 1, mv);
 
     if(validJump(*mv,salto))
@@ -374,12 +371,9 @@ void output(int x, int modo,int tam)
         printf("@%o ", x);
     if ((modo & 0x02) == 0x02) {
         printf("'");
-     for(int i=tam;i>=0;i--)
-        if ((0xFF & (x>>i*8)) <= 0x1F) {
-            printf(".");
-        } else
-            printf("%c", x>>8*i);
-        printf(" ");
+        for(int i=tam;i>=0;i--)
+            printf("%c", isprint(x>>8*i)?x>>8*i:'.');
+        putchar(' ');
     }
     if ((modo & 0x01) == 0x01)
         printf("#%d", x);
@@ -408,9 +402,13 @@ void SYS3(TMV *mv)
 void SYS4(TMV *mv)
 {
     int dir = ((mv->tablaSegmentos[(mv->registros[EDX]>>16)&0xF]>>16)&0xFFFF) + (mv->registros[EDX]&0xFFFF);
-
     printf("[%04X]: ",dir);
-    printf("%s",mv->memoria+dir);
+
+    while (*(mv->memoria + dir) != '\0') {
+      printf("%c", isprint(*(mv->memoria + dir))?*(mv->memoria + dir):'.');
+      dir++;
+    }
+    putchar('\n');
 }
 
 // limpio la consola (no se si es asi en C)
@@ -425,33 +423,35 @@ void SYS7(TMV *mv)
 
 void SYSF(TMV *mv)
 {
-    printf("MODO DEBUG \n");
     mv->modo = DEBUG;
 }
 
 void pasoDebug(TMV *mv, char* filename)
 {
-    char input;
+    if (filename) {
+        char input;
 
-    generaImagen(filename,mv);
+        generaImagen(filename,mv);
 
-    do{
-        input = getchar();
-    }while(input != 'g' && input!='q' && input !='\n');
+        do{
+            input = getchar();
+        }while(input != 'g' && input!='q' && input !='\n');
 
-    if(input == 'g')
+        if(input == 'g')
+            mv->modo = !DEBUG;
+
+        if(input == 'q')
+            mv->registros[IP] |= 0x8000;
+    } else {
         mv->modo = !DEBUG;
-
-    if(input == 'q')
-        mv->registros[IP] |= 0x8000;
+    }
 }
 
 void generaImagen(char* filename, TMV mv)
 {
-    printf("IMAGEN\n");
     FILE* arch;
     char id[] = "VMI24";
-    char version = '1';
+    char version = '1' - '0';
     int i;
 
     arch = fopen(filename,"wb");

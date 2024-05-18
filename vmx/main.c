@@ -5,12 +5,15 @@
 
 
 void procesaInstruccion(TMV *mv, void (*operaciones[])(), void (*systemCall[])());
+
 void reportStatus(int estado);
+
+int finPrograma(TMV mv);
 
 int main(int argc, char *argv[]){
     TMV mv;
     char* imageFilename;
-    int segmentoSizes[6], i;
+    int segmentoSizes[6], i, programSize;
 
     void (*operaciones[])() = {MOV, ADD, SUB, SWAP, MUL, DIV, CMP, SHL, SHR, AND, OR, XOR,
                                  RND, NULL, NULL, NULL, NULL, JMP, JZ, JP, JN, JNZ, JNP, JNN,
@@ -19,7 +22,7 @@ int main(int argc, char *argv[]){
     void (*systemCall[])() = {SYS1, SYS2, SYS3, SYS4, NULL, NULL, SYS7, NULL, NULL, NULL, NULL, NULL, NULL, NULL, SYSF};
 
 
-    //lee el header y en base a eso inicializa la MV // argv[1] nombre .vmx // argv[2] nombre .vmi // argv[3] tamaño memoria
+    //lee el header y en base a eso inicializa la MV // argv[1] nombre .vmx // argv[2] nombre .vmi // argv[3] tamaï¿½o memoria
 
     i = checkParam( argc, argv, "m=");
     mv.memorySize = (i!=0) ? atoi(argv[i]+2) : MEMORIA_SIZE;
@@ -28,17 +31,19 @@ int main(int argc, char *argv[]){
     imageFilename = (i!=0)? argv[i] : NULL;
 
     inicializacion(segmentoSizes, argv[1], &mv);
-
+    
     //chequeo si pidieron disassembler
-    if (checkParam( argc, argv, "-d"))
-        disassembler(mv, mv.tablaSegmentos[mv.registros[CS]>>16]&0xFFFF);
+    if (checkParam( argc, argv, "-d")) {
+        programSize = (mv.tablaSegmentos[mv.registros[CS]>>16] >> 16) + (mv.tablaSegmentos[mv.registros[CS]>>16]&0xFFFF);
+        disassembler(mv, programSize);
+    }
 
     //procesa programa hasta encontrar un STOP o que ocurra un error (segmento invalido,div por 0,etc)
     while (!finPrograma(mv))
     {
         procesaInstruccion(&mv, operaciones, systemCall);
 
-        if(mv.modo ==  DEBUG && imageFilename != NULL)
+        if(mv.modo == DEBUG)
             pasoDebug(&mv, imageFilename);
 
     }
@@ -58,7 +63,6 @@ void procesaInstruccion(TMV *mv, void (*operaciones[])(), void (*systemCall[])()
     char* aux;
     codOp = instruccion & 0x1F;
 
-
     if( instruccionValida(codOp))
     {
         //determino tipos de operandos
@@ -75,7 +79,7 @@ void procesaInstruccion(TMV *mv, void (*operaciones[])(), void (*systemCall[])()
         //chequearlo antes de ir a la operacion me facilita no tener q estar chequeandolo adentro de cada operacion
         vA = (opA == 0)? validDirection(*mv,A) : 1;
         vB = (opB == 0)? validDirection(*mv,B) : 1;
-
+        
         if(vA && vB)
         {
             //segun el codigo de operacion, llamo la q corresponda
