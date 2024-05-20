@@ -2,23 +2,19 @@
 <CodeBlocks_layout_file>
 	<FileVersion major="1" minor="0" />
 	<ActiveTarget name="Debug" />
+	<File name="disassembler.h" open="1" top="0" tabpos="7" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="279" topLine="0" />
+		</Cursor>
+	</File>
 	<File name="mv.c" open="1" top="1" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="3164" topLine="78" />
+			<Cursor1 position="1783" topLine="63" />
 		</Cursor>
-		<Folding>
-			<Collapse line="42" />
-			<Collapse line="222" />
-		</Folding>
 	</File>
 	<File name="operaciones.h" open="1" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="1287" topLine="45" />
-		</Cursor>
-	</File>
-	<File name="operaciones.c" open="1" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="10562" topLine="292" />
+			<Cursor1 position="989" topLine="27" />
 		</Cursor>
 	</File>
 	<File name="mv.h" open="1" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
@@ -28,22 +24,22 @@
 	</File>
 	<File name="main.c" open="1" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="1192" topLine="17" />
-		</Cursor>
-	</File>
-	<File name="disassembler.h" open="1" top="0" tabpos="7" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="279" topLine="0" />
+			<Cursor1 position="1016" topLine="7" />
 		</Cursor>
 	</File>
 	<File name="disassembler.c" open="1" top="0" tabpos="6" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="783" topLine="3" />
+			<Cursor1 position="783" topLine="170" />
 		</Cursor>
 	</File>
 	<File name="constantes.h" open="1" top="0" tabpos="8" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
 			<Cursor1 position="269" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="operaciones.c" open="1" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="10599" topLine="430" />
 		</Cursor>
 	</File>
 </CodeBlocks_layout_file>

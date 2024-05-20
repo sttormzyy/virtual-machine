@@ -53,7 +53,6 @@ void inicializacion( int segmentoSizes[], char *filename1, TMV *mv)
 	char tipoArch[6], version;
 	int d, i, memoriaSizeControl = 0;
 
-
 	if(strstr(filename1,".vmx") != NULL) // proceso .vmx
     {
         arch = fopen(filename1, "rb");
@@ -65,7 +64,7 @@ void inicializacion( int segmentoSizes[], char *filename1, TMV *mv)
         {
             case 1:
                 leeDosBytes(&(segmentoSizes[CS]), arch);
-                segmentoSizes[DS] = MEMORIA_SIZE - segmentoSizes[CS];
+                segmentoSizes[DS] = mv->memorySize - segmentoSizes[CS];
                 segmentoSizes[IP] = segmentoSizes[KS] = segmentoSizes[ES] = segmentoSizes[SS] = 0;
                 fseek(arch, 8, SEEK_SET);
                 break;
@@ -80,7 +79,7 @@ void inicializacion( int segmentoSizes[], char *filename1, TMV *mv)
         }
 
         // valido tamanio del proceso
-        if (memoriaSizeControl<=MEMORIA_SIZE)
+        if (memoriaSizeControl<=mv->memorySize)
         {
             iniciaMV(mv, segmentoSizes);
             cargaCodigo(mv, arch, segmentoSizes[CS]);

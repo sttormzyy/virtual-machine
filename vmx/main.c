@@ -14,6 +14,7 @@ int main(int argc, char *argv[]){
     TMV mv;
     char* imageFilename;
     int segmentoSizes[6], i, programSize;
+    srand(time(NULL)); //para la funcion rnd
 
     void (*operaciones[])() = {MOV, ADD, SUB, SWAP, MUL, DIV, CMP, SHL, SHR, AND, OR, XOR,
                                  RND, NULL, NULL, NULL, NULL, JMP, JZ, JP, JN, JNZ, JNP, JNN,
@@ -22,16 +23,17 @@ int main(int argc, char *argv[]){
     void (*systemCall[])() = {SYS1, SYS2, SYS3, SYS4, NULL, NULL, SYS7, NULL, NULL, NULL, NULL, NULL, NULL, NULL, SYSF};
 
 
-    //lee el header y en base a eso inicializa la MV // argv[1] nombre .vmx // argv[2] nombre .vmi // argv[3] tama�o memoria
+    //lee el header y en base a eso inicializa la MV // argv[1] nombre .vmx // argv[2] nombre .vmi // argv[3] tamano memoria
 
     i = checkParam( argc, argv, "m=");
     mv.memorySize = (i!=0) ? atoi(argv[i]+2) : MEMORIA_SIZE;
+
 
     i = checkParam( argc, argv, ".vmi");
     imageFilename = (i!=0)? argv[i] : NULL;
 
     inicializacion(segmentoSizes, argv[1], &mv);
-    
+
     //chequeo si pidieron disassembler
     if (checkParam( argc, argv, "-d")) {
         programSize = (mv.tablaSegmentos[mv.registros[CS]>>16] >> 16) + (mv.tablaSegmentos[mv.registros[CS]>>16]&0xFFFF);
@@ -79,7 +81,7 @@ void procesaInstruccion(TMV *mv, void (*operaciones[])(), void (*systemCall[])()
         //chequearlo antes de ir a la operacion me facilita no tener q estar chequeandolo adentro de cada operacion
         vA = (opA == 0)? validDirection(*mv,A) : 1;
         vB = (opB == 0)? validDirection(*mv,B) : 1;
-        
+
         if(vA && vB)
         {
             //segun el codigo de operacion, llamo la q corresponda

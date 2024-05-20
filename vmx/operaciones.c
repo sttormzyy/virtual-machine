@@ -3,6 +3,7 @@
 #include <time.h>
 #include <string.h>
 
+
 //modifico los bits N,Z de acuerdo al resultado de la ultima operacion logico/matematica
 void NZ(TMV *mv, int resultado)
 {
@@ -233,8 +234,8 @@ void RND(int A, int opA, int B, int opB, TMV *mv)
 {
     int valB = operandValue(*mv, B, opB);
 
-    srand(time(NULL));
     int C = rand()%(valB+1); //al hacer %(valB+1) hago q devuelva num entre 0 y valB
+    printf("rnd:%d\n",C);
     MOV(A,opA,C,1,mv);
 }
 
@@ -246,7 +247,6 @@ void PUSH(int B, int opB, TMV *mv)
     // 0 indica q escriba 4 bytes, 6 q use el registro SP para calcular direccion, 0000 q no tiene offset xq escribe donde apunta SP
     int valB = operandValue(*mv, B, opB); // este va depender de q se este pusheando, si memoria,registro o inmediato
 
-    if(opB==2 && ((B&0xF)==11))printf(" PUSH %d\n",valB);
     mv->registros[SP] -= 4;
     if(mv->registros[SP] > mv->registros[SS])
     {
@@ -262,7 +262,6 @@ void POP(int A, int opA, TMV *mv)
 {
     int B = 0x060000; // el pop hace un MOV de lo q tiene donde apunta SP hacia registro o memoria
 
-    printf(" POP \n");
     if((mv->registros[SP]&0xFFFF) < (mv->tablaSegmentos[(mv->registros[SS]>>16)&0xF]&0xFFFF))
     {
         MOV(A, opA, B, 0, mv);
@@ -288,7 +287,6 @@ void CALL(int salto, int codOp, TMV *mv)
 
 void RET(int B, int opB, TMV *mv)
 {
-  printf(" RET \n");
     //preparo para hacer un POP IP q es hacer un MOV IP,[SP]
   int opA = 2; // tipo de operando registro
   int A = 0x05; // y acomodo el registro al q quiero mover lo q saque con POP como SP
@@ -428,7 +426,7 @@ void SYSF(TMV *mv)
 
 void pasoDebug(TMV *mv, char* filename)
 {
-    if (filename) {
+    if (filename!=NULL) {
         char input;
 
         generaImagen(filename,mv);
@@ -442,26 +440,47 @@ void pasoDebug(TMV *mv, char* filename)
 
         if(input == 'q')
             mv->registros[IP] |= 0x8000;
-    } else {
+    } else
         mv->modo = !DEBUG;
-    }
 }
 
 void generaImagen(char* filename, TMV mv)
 {
     FILE* arch;
     char id[] = "VMI24";
-    char version = '1' - '0';
+    char version = 1;
+    char msize[2];
     int i;
 
     arch = fopen(filename,"wb");
 
     fwrite(id, sizeof(char), 5, arch);
     fwrite(&version, sizeof(char), 1, arch);
-    fwrite(&mv.memorySize, sizeof(char), 2, arch);
-    fwrite(mv.registros, sizeof(char), 64, arch);
-    fwrite(mv.tablaSegmentos, sizeof(char), 32, arch);
+
+    msize[0] = (mv.memorySize>>8)&0xFF;
+    msize[1] = mv.memorySize & 0xFF;
+
+    fwrite(msize,sizeof(char),2,arch);
+
+    for(int i=0;i<16;i++)
+        toLittle(arch,mv.registros[i]);
+
+    for(int k=0; k<8; k++)
+        toLittle(arch,mv.tablaSegmentos[k]);
+
     fwrite(mv.memoria, sizeof(char), mv.memorySize, arch);
 
     fclose(arch);
+}
+
+void toLittle(FILE* file, int value)
+{
+    // Convierte el entero a little endian (si es necesario)
+    char bytes[4];
+    bytes[3] = value & 0xFF;
+    bytes[2] = (value >> 8) & 0xFF;
+    bytes[1] = (value >> 16) & 0xFF;
+    bytes[0] = (value >> 24) & 0xFF;
+
+    fwrite(bytes, sizeof(char), 4, file);
 }

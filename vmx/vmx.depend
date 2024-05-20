@@ -32,12 +32,13 @@
 	<stdlib.h>
 	<time.h>
 
-1715738885 source:e:\repo por las dudas de mv\virtual-machine\vmx\disassembler.c
+1716063943 source:e:\repo por las dudas de mv\virtual-machine\vmx\disassembler.c
 	<string.h>
+	<ctype.h>
 	<stdio.h>
 	"operaciones.h"
 
-1715895507 e:\repo por las dudas de mv\virtual-machine\vmx\operaciones.h
+1716063943 e:\repo por las dudas de mv\virtual-machine\vmx\operaciones.h
 	"mv.h"
 
 1715568533 e:\repo por las dudas de mv\virtual-machine\vmx\mv.h
@@ -46,7 +47,7 @@
 
 1715567448 e:\repo por las dudas de mv\virtual-machine\vmx\constantes.h
 
-1715901966 source:e:\repo por las dudas de mv\virtual-machine\vmx\main.c
+1716242070 source:e:\repo por las dudas de mv\virtual-machine\vmx\main.c
 	<stdlib.h>
 	<string.h>
 	"operaciones.h"
@@ -54,14 +55,14 @@
 
 1715215501 e:\repo por las dudas de mv\virtual-machine\vmx\disassembler.h
 
-1715902689 source:e:\repo por las dudas de mv\virtual-machine\vmx\mv.c
+1716217823 source:e:\repo por las dudas de mv\virtual-machine\vmx\mv.c
 	<string.h>
 	<stdlib.h>
 	<stdio.h>
 	<math.h>
 	"mv.h"
 
-1715902015 source:e:\repo por las dudas de mv\virtual-machine\vmx\operaciones.c
+1716242104 source:e:\repo por las dudas de mv\virtual-machine\vmx\operaciones.c
 	"operaciones.h"
 	<stdlib.h>
 	<time.h>
