@@ -94,14 +94,27 @@ void inicializacion( int segmentoSizes[], char *filename1, TMV *mv)
             fread(tipoArch, sizeof(char), 5, arch);
             fread(&version, sizeof(char), 1, arch);
 
-            fread(&(mv->memorySize), sizeof(short int), 1, arch);
+            leeDosBytes(&(mv->memorySize), arch);
+            mv->memorySize = mv->memorySize * 0x400;
             mv->memoria = (char*)malloc(mv->memorySize);
 
-            fread(mv->registros, sizeof(int), 16, arch);
-            fread(mv->tablaSegmentos, sizeof(int), 8, arch);
+            for(int i=0; i<16; i++)
+            {
+                fread(&(mv->registros[i]), sizeof(char), 4, arch);
+                invierteBytes(&(mv->registros[i]));
+            }
+
+
+           for(int i=0; i<8; i++)
+           {
+               fread(&(mv->tablaSegmentos[i]), sizeof(char), 4, arch);
+               invierteBytes(&(mv->tablaSegmentos[i]));
+           }
+
             fread(mv->memoria, sizeof(char), mv->memorySize, arch);
+            fclose(arch);
        }else
-           mv->errorFlag = 4; //tipo de archivo invalido no soporta la MV
+           mv->errorFlag = 4; //tipo de archivo invalido que no soporta la MV
 }
 
 void cargaCodigo(TMV *mv, FILE *arch, int programSize)
@@ -237,4 +250,16 @@ void registerMask(int secReg, int *corr, int *mask)
 			break;
 		}
 	}
+}
+
+void invierteBytes(int* value)
+{
+    // Convierte el entero a little endian (si es necesario)
+    char bytes[4];
+    bytes[3] = *value & 0xFF;
+    bytes[2] = (*value >> 8) & 0xFF;
+    bytes[1] = (*value >> 16) & 0xFF;
+    bytes[0] = (*value >> 24) & 0xFF;
+
+    *value = ((bytes[3]<<24)&0xFF000000) | ((bytes[2]<<16)&0xFF0000) | ((bytes[1]<<8)&0xFF00) | (bytes[0]&0xFF);
 }

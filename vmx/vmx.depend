@@ -104,3 +104,68 @@
 
 1716047497 c:\users\vanci\desktop\code\virtual-machine\vmx\disassembler.h
 
+1716260086 source:c:\users\windows11\desktop\virtual-machine\vmx\disassembler.c
+	<string.h>
+	<ctype.h>
+	<stdio.h>
+	"operaciones.h"
+
+1716260086 c:\users\windows11\desktop\virtual-machine\vmx\operaciones.h
+	"mv.h"
+
+1716260086 c:\users\windows11\desktop\virtual-machine\vmx\mv.h
+	"constantes.h"
+	<stdio.h>
+
+1716260086 c:\users\windows11\desktop\virtual-machine\vmx\constantes.h
+
+1716260086 source:c:\users\windows11\desktop\virtual-machine\vmx\main.c
+	<stdlib.h>
+	<string.h>
+	"operaciones.h"
+	"disassembler.h"
+
+1716260086 c:\users\windows11\desktop\virtual-machine\vmx\disassembler.h
+
+1716260254 source:c:\users\windows11\desktop\virtual-machine\vmx\operaciones.c
+	"operaciones.h"
+	<stdlib.h>
+	<time.h>
+	<string.h>
+
+1716476045 source:c:\users\windows11\desktop\vmx\vmx\disassembler.c
+	<string.h>
+	<ctype.h>
+	<stdio.h>
+	"operaciones.h"
+
+1716260417 c:\users\windows11\desktop\vmx\vmx\operaciones.h
+	"mv.h"
+
+1716260417 c:\users\windows11\desktop\vmx\vmx\mv.h
+	"constantes.h"
+	<stdio.h>
+
+1716260417 c:\users\windows11\desktop\vmx\vmx\constantes.h
+
+1716508174 source:c:\users\windows11\desktop\vmx\vmx\main.c
+	<stdlib.h>
+	<string.h>
+	"operaciones.h"
+	"disassembler.h"
+
+1716260417 c:\users\windows11\desktop\vmx\vmx\disassembler.h
+
+1716260417 source:c:\users\windows11\desktop\vmx\vmx\mv.c
+	<string.h>
+	<stdlib.h>
+	<stdio.h>
+	<math.h>
+	"mv.h"
+
+1716573452 source:c:\users\windows11\desktop\vmx\vmx\operaciones.c
+	"operaciones.h"
+	<stdlib.h>
+	<time.h>
+	<string.h>
+

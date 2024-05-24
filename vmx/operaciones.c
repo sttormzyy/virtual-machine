@@ -386,8 +386,7 @@ void SYS3(TMV *mv)
     int dir = ((mv->tablaSegmentos[(mv->registros[EDX]>>16)&0xF]>>16)&0xFFFF) + (mv->registros[EDX]&0xFFFF);
     int cantCaracteres = mv->registros[ECX] & 0xFF;
 
-    printf("[%04X]: ",dir);
-    fgets(buffer, sizeof(buffer), stdin);
+    scanf("%s", buffer);
 
     if(cantCaracteres == -1)
         strcpy(mv->memoria+dir,buffer);
@@ -400,13 +399,11 @@ void SYS3(TMV *mv)
 void SYS4(TMV *mv)
 {
     int dir = ((mv->tablaSegmentos[(mv->registros[EDX]>>16)&0xF]>>16)&0xFFFF) + (mv->registros[EDX]&0xFFFF);
-    printf("[%04X]: ",dir);
 
     while (*(mv->memoria + dir) != '\0') {
-      printf("%c", isprint(*(mv->memoria + dir))?*(mv->memoria + dir):'.');
+      printf("%c", *(mv->memoria + dir));
       dir++;
     }
-    putchar('\n');
 }
 
 // limpio la consola (no se si es asi en C)
@@ -429,7 +426,7 @@ void pasoDebug(TMV *mv, char* filename)
     if (filename!=NULL) {
         char input;
 
-        generaImagen(filename,mv);
+        generaImagen(filename,*mv);
 
         do{
             input = getchar();
@@ -463,17 +460,16 @@ void generaImagen(char* filename, TMV mv)
     fwrite(msize,sizeof(char),2,arch);
 
     for(int i=0;i<16;i++)
-        toLittle(arch,mv.registros[i]);
+        invierteBytesImg(arch,mv.registros[i]);
 
     for(int k=0; k<8; k++)
-        toLittle(arch,mv.tablaSegmentos[k]);
+        invierteBytesImg(arch,mv.tablaSegmentos[k]);
 
     fwrite(mv.memoria, sizeof(char), mv.memorySize, arch);
 
     fclose(arch);
 }
-
-void toLittle(FILE* file, int value)
+void invierteBytesImg(FILE* file, int value)
 {
     // Convierte el entero a little endian (si es necesario)
     char bytes[4];

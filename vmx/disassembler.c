@@ -19,7 +19,7 @@ void disassembler(TMV mv, int programSize)
     int i,ip = (mv.tablaSegmentos[mv.registros[CS] >> 16] >> 16) & 0xFFFF;
 
     mostrarConstantes(mv);
-    
+
     while (ip < programSize && !mv.errorFlag)
     {
         pasoDis(&mv, mv.memoria[ip]&0xFF, &ip);
@@ -33,7 +33,7 @@ void pasoDis(TMV *mv, char instruccion, int *ip) {
 
     if (instruccionValida(codOp))
     {
-        if(*ip == mv->registros[IP]&0xFFFF)
+        if(*ip == (((mv->tablaSegmentos[mv->registros[CS] >> 16] >> 16) & 0xFFFF)+mv->registros[IP]&0xFFFF))
             putchar('>');
         else
             putchar(' ');
