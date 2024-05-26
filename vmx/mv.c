@@ -10,7 +10,7 @@ void iniciaMV(TMV *mv, int segmentoSizes[])
 	int posicionTablaSegmento = 0, i, memoriaSizeControl = 0;
 	mv->memoria = (char *) malloc(mv->memorySize);
 
-	// carga los registros CS, DS, ES, SS, KS con los valores del header
+	//carga los registros CS, DS, ES, SS, KS con los valores del header
 	if (segmentoSizes[KS])
     {
 		mv->registros[KS] = 0;
@@ -32,7 +32,7 @@ void iniciaMV(TMV *mv, int segmentoSizes[])
 			mv->registros[i] = -1;
 	}
 
-	//inicializo IP con el offset correspondiente
+	//inicializo SP e IP con el offset correspondiente
 	mv->registros[IP] = (mv->registros[CS] & 0xFFFF0000) | (segmentoSizes[IP] & 0xFFFF);
     mv->registros[SP] = mv->registros[SS] | segmentoSizes[SS];
 	mv->errorFlag = 0;
@@ -53,7 +53,7 @@ void inicializacion( int segmentoSizes[], char *filename1, TMV *mv)
 	char tipoArch[6], version;
 	int d, i, memoriaSizeControl = 0;
 
-	if(strstr(filename1,".vmx") != NULL) // proceso .vmx
+	if(strstr(filename1,".vmx") != NULL) //VMX
     {
         arch = fopen(filename1, "rb");
 
@@ -62,13 +62,13 @@ void inicializacion( int segmentoSizes[], char *filename1, TMV *mv)
 
         switch(version)
         {
-            case 1:
+            case 1: //VMX V1
                 leeDosBytes(&(segmentoSizes[CS]), arch);
                 segmentoSizes[DS] = mv->memorySize - segmentoSizes[CS];
                 segmentoSizes[IP] = segmentoSizes[KS] = segmentoSizes[ES] = segmentoSizes[SS] = 0;
                 fseek(arch, 8, SEEK_SET);
                 break;
-            case 2:
+            case 2: //VMX V2
                 for (i = 0; i < 6; ++i)
                 {
                     leeDosBytes(&(segmentoSizes[i]), arch);
@@ -78,15 +78,14 @@ void inicializacion( int segmentoSizes[], char *filename1, TMV *mv)
                 break;
         }
 
-        // valido tamanio del proceso
         if (memoriaSizeControl<=mv->memorySize)
         {
             iniciaMV(mv, segmentoSizes);
             cargaCodigo(mv, arch, segmentoSizes[CS]);
         }else
-            mv->errorFlag=5; // el tamanio es 0 o es mayor q el de la memoria
+            mv->errorFlag=5; //memoria insuficiente
 
-	}else // proceso .vmi
+	}else //VMI
 	    if(strstr(filename1, ".vmi") != NULL)
         {
             arch = fopen(filename1, "rb");
@@ -133,7 +132,6 @@ char instruccionActual(TMV mv)
     return mv.memoria[((mv.tablaSegmentos[posTabla]>>16)&0xFFFF)+(mv.registros[IP]&0xFFFF)] & 0xFF;
 }
 
-//verifica que el codigo de operacion exista
 int instruccionValida(char codOp)
 {
     return (codOp>=0 && codOp <=0xC) || (codOp>=0x10 && codOp<=0x1F);
@@ -168,12 +166,13 @@ void readOperand(TMV *mv, int tipo, int *operador)
 	int i, ip = (((mv->tablaSegmentos[mv->registros[CS] >> 16] >> 16) & 0xFFFF) + mv->registros[IP] & 0xFFFF);
 	*operador = 0;
 
-	// obtengo la informacion que esta en memoria sobre el operador
+	//obtengo la informacion que esta en memoria sobre el operador
 	for (i = 0; i < operadorSize; ++i)
     {
 		*operador = ((*operador) << 8) | (mv->memoria[ip++] & 0xFF);
 	}
 	mv->registros[IP] += operadorSize;
+
     //expande signo si es inmediato
 	if(tipo == 1)
     {
@@ -206,10 +205,10 @@ int operandValue(TMV mv, int operand, int tipo)
 			valor = mv.registros[codReg] & mask;
             valor = valor >> (8*corr);
 
-            //expando signo si no tomo el registro completo
+        //expando signo si no tomo el registro completo
             if(secReg == 1 || secReg == 2 )
             {
-               valor = valor<<24>>24;
+                valor = valor<<24>>24;
             }
             if(secReg == 3)
             {
@@ -254,7 +253,6 @@ void registerMask(int secReg, int *corr, int *mask)
 
 void invierteBytes(int* value)
 {
-    // Convierte el entero a little endian (si es necesario)
     char bytes[4];
     bytes[3] = *value & 0xFF;
     bytes[2] = (*value >> 8) & 0xFF;

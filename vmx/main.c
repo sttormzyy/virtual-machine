@@ -23,11 +23,10 @@ int main(int argc, char *argv[]){
     void (*systemCall[])() = {SYS1, SYS2, SYS3, SYS4, NULL, NULL, SYS7, NULL, NULL, NULL, NULL, NULL, NULL, NULL, SYSF};
 
 
-    //lee el header y en base a eso inicializa la MV // argv[1] nombre .vmx // argv[2] nombre .vmi // argv[3] tamano memoria
+
 
     i = checkParam( argc, argv, "m=");
-    mv.memorySize = (i!=0) ? atoi(argv[i]+2) : MEMORIA_SIZE;
-
+    mv.memorySize = (i!=0) ? atoi(argv[i]+2)*0x400 : MEMORIA_SIZE;
 
     i = checkParam( argc, argv, ".vmi");
     imageFilename = (i!=0)? argv[i] : NULL;
@@ -77,8 +76,7 @@ void procesaInstruccion(TMV *mv, void (*operaciones[])(), void (*systemCall[])()
         readOperand(mv, opB, &B);
         readOperand(mv, opA, &A);
 
-        //si el operando es de memoria chequeo q no se salga de segmento la direccion a donde tengo q buscar el dato, sino lo doy como valido
-        //chequearlo antes de ir a la operacion me facilita no tener q estar chequeandolo adentro de cada operacion
+        //si el tipo de operando es de memoria, chequeo validez de la direccion
         vA = (opA == 0)? validDirection(*mv,A) : 1;
         vB = (opB == 0)? validDirection(*mv,B) : 1;
 
@@ -88,7 +86,7 @@ void procesaInstruccion(TMV *mv, void (*operaciones[])(), void (*systemCall[])()
             if(codOp & 0x10)
             {
                 if(codOp == 0x10)
-                    systemCall[B-1](mv); // llamadas a sistema
+                    systemCall[B-1](mv); //llamadas a sistema
                 else
                 {
                     if((codOp>=0x11 && codOp<=0x17))
@@ -109,23 +107,23 @@ void reportStatus(int estado)
 {
     switch(estado)
     {
-        case 0: printf("SUCCESSFUL EXECUTION :)");
+        case 0: printf("\n\nSUCCESSFUL EXECUTION :)");
         break;
-        case 1: printf("INVALID SEGMENT");
+        case 1: printf("\n\nINVALID SEGMENT");
         break;
-        case 2: printf("INVALID INSTRUCTION");
+        case 2: printf("\n\nINVALID INSTRUCTION");
         break;
-        case 3: printf("DIVISION BY ZERO");
+        case 3: printf("\n\nDIVISION BY ZERO");
         break;
-        case 4: printf("INVALID ARCHIVE TYPE");
+        case 4: printf("\n\nINVALID ARCHIVE TYPE");
         break;
-        case 5: printf("INSUFFICIENT MEMORY");
+        case 5: printf("\n\nINSUFFICIENT MEMORY");
         break;
-        case 6: printf("STACK OVERFLOW");
+        case 6: printf("\n\nSTACK OVERFLOW");
         break;
-        case 7: printf("STACK UNDERFLOW");
+        case 7: printf("\n\nSTACK UNDERFLOW");
         break;
-        default: printf("UNHANDLED ERROR");
+        default: printf("\n\nUNHANDLED ERROR");
         break;
    }
 }

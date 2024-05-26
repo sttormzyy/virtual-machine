@@ -187,7 +187,7 @@ void JNZ(int salto, TMV *mv)
 {
     if(!(mv->registros[CC]&0x40000000))
     {
-        mv->registros[CC] = mv->registros[CS]+salto;
+        mv->registros[IP] = mv->registros[CS]+salto;
     }
 
 };
@@ -235,7 +235,6 @@ void RND(int A, int opA, int B, int opB, TMV *mv)
     int valB = operandValue(*mv, B, opB);
 
     int C = rand()%(valB+1); //al hacer %(valB+1) hago q devuelva num entre 0 y valB
-    printf("rnd:%d\n",C);
     MOV(A,opA,C,1,mv);
 }
 
@@ -260,7 +259,7 @@ void PUSH(int B, int opB, TMV *mv)
 
 void POP(int A, int opA, TMV *mv)
 {
-    int B = 0x060000; // el pop hace un MOV de lo q tiene donde apunta SP hacia registro o memoria
+    int B = 0x060000; //el pop hace un MOV de lo q tiene donde apunta SP hacia registro o memoria
 
     if((mv->registros[SP]&0xFFFF) < (mv->tablaSegmentos[(mv->registros[SS]>>16)&0xF]&0xFFFF))
     {
@@ -269,11 +268,10 @@ void POP(int A, int opA, TMV *mv)
     }
     else
     {
-        mv->errorFlag = 7; // stack underflow
+        mv->errorFlag = 7; //stack underflow
     }
 }
 
-// este no me gusta despues te digo xq cuando hagamos ds
 void CALL(int salto, int codOp, TMV *mv)
 {
     PUSH(mv->registros[IP], 1, mv);
@@ -297,7 +295,7 @@ void RET(int B, int opB, TMV *mv)
 
 // LLAMADAS A SISTEMA
 
-// el usuario ingresa por consola
+//usuario ingresa por consola
 void SYS1(TMV *mv)
 {
     int dir = ((mv->tablaSegmentos[(mv->registros[EDX]>>16)&0xF]>>16)&0xFFFF) + (mv->registros[EDX]&0xFFFF);
@@ -340,7 +338,7 @@ void input(int *x,int modo)
 }
 
 
-// muestro por consola
+//muestra por consola
 void SYS2(TMV *mv)
 {
     int dir = ((mv->tablaSegmentos[(mv->registros[EDX]>>16)&0xF]>>16)&0xFFFF) + (mv->registros[EDX]&0xFFFF);
@@ -379,7 +377,7 @@ void output(int x, int modo,int tam)
 }
 
 
-// el usuario ingresa un string
+//usuario ingresa un string
 void SYS3(TMV *mv)
 {
     char buffer[1000] = {0};
@@ -387,7 +385,7 @@ void SYS3(TMV *mv)
     int cantCaracteres = mv->registros[ECX] & 0xFF;
 
     scanf("%s", buffer);
-
+    getchar();
     if(cantCaracteres == -1)
         strcpy(mv->memoria+dir,buffer);
     else
@@ -395,7 +393,7 @@ void SYS3(TMV *mv)
 }
 
 
-// muestro por consola un string
+//muestra por consola un string
 void SYS4(TMV *mv)
 {
     int dir = ((mv->tablaSegmentos[(mv->registros[EDX]>>16)&0xF]>>16)&0xFFFF) + (mv->registros[EDX]&0xFFFF);
@@ -406,7 +404,7 @@ void SYS4(TMV *mv)
     }
 }
 
-// limpio la consola (no se si es asi en C)
+//limpia la consola
 void SYS7(TMV *mv)
 {
     system("cls");
@@ -447,6 +445,7 @@ void generaImagen(char* filename, TMV mv)
     char id[] = "VMI24";
     char version = 1;
     char msize[2];
+    short int msizeKib = (mv.memorySize)/0x400;
     int i;
 
     arch = fopen(filename,"wb");
@@ -454,8 +453,8 @@ void generaImagen(char* filename, TMV mv)
     fwrite(id, sizeof(char), 5, arch);
     fwrite(&version, sizeof(char), 1, arch);
 
-    msize[0] = (mv.memorySize>>8)&0xFF;
-    msize[1] = mv.memorySize & 0xFF;
+    msize[0] = (msizeKib>>8)&0xFF;
+    msize[1] = msizeKib & 0xFF;
 
     fwrite(msize,sizeof(char),2,arch);
 
@@ -471,7 +470,6 @@ void generaImagen(char* filename, TMV mv)
 }
 void invierteBytesImg(FILE* file, int value)
 {
-    // Convierte el entero a little endian (si es necesario)
     char bytes[4];
     bytes[3] = value & 0xFF;
     bytes[2] = (value >> 8) & 0xFF;

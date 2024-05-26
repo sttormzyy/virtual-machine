@@ -169,3 +169,39 @@
 	<time.h>
 	<string.h>
 
+1716744402 source:c:\mv\virtual-machine\vmx\disassembler.c
+	<string.h>
+	<ctype.h>
+	<stdio.h>
+	"operaciones.h"
+
+1716744402 c:\mv\virtual-machine\vmx\operaciones.h
+	"mv.h"
+
+1716744402 c:\mv\virtual-machine\vmx\mv.h
+	"constantes.h"
+	<stdio.h>
+
+1716744402 c:\mv\virtual-machine\vmx\constantes.h
+
+1716748005 source:c:\mv\virtual-machine\vmx\main.c
+	<stdlib.h>
+	<string.h>
+	"operaciones.h"
+	"disassembler.h"
+
+1716744402 c:\mv\virtual-machine\vmx\disassembler.h
+
+1716745134 source:c:\mv\virtual-machine\vmx\mv.c
+	<string.h>
+	<stdlib.h>
+	<stdio.h>
+	<math.h>
+	"mv.h"
+
+1716747208 source:c:\mv\virtual-machine\vmx\operaciones.c
+	"operaciones.h"
+	<stdlib.h>
+	<time.h>
+	<string.h>
+
